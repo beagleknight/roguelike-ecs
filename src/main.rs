@@ -5,6 +5,7 @@ use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
 mod components;
+use components::block::Block;
 use components::player::Player;
 use components::position::Position;
 use components::renderable::Renderable;
@@ -22,6 +23,26 @@ fn main() {
     world.register::<Renderable>();
     world.register::<Position>();
     world.register::<Player>();
+    world.register::<Block>();
+
+    world
+        .create_entity()
+        .with(Renderable {
+            color: GREEN,
+            character: 'o',
+        })
+        .with(Position { x: 30, y: 20 })
+        .with(Block)
+        .build();
+
+    world
+        .create_entity()
+        .with(Renderable {
+            color: YELLOW,
+            character: '#',
+        })
+        .with(Position { x: 30, y: 30 })
+        .build();
 
     world
         .create_entity()
@@ -31,15 +52,6 @@ fn main() {
         })
         .with(Position { x: 20, y: 20 })
         .with(Player)
-        .build();
-
-    world
-        .create_entity()
-        .with(Renderable {
-            color: GREEN,
-            character: 'o',
-        })
-        .with(Position { x: 30, y: 20 })
         .build();
 
     let key: Key = Default::default();
