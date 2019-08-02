@@ -9,7 +9,7 @@ use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
 use crate::components::renderable::Arrangement;
-use crate::components::{Block, Player, Position, Renderable};
+use crate::components::{Player, Renderable};
 use crate::map::Map;
 use crate::systems::{PlayerMove, Render};
 

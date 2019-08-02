@@ -14,20 +14,10 @@ const ROOM_MIN_SIZE: i32 = 6;
 const MAX_ROOMS: i32 = 30;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
-const COLOR_LIGHT_WALL: Color = Color {
-    r: 130,
-    g: 110,
-    b: 50,
-};
 const COLOR_DARK_GROUND: Color = Color {
     r: 50,
     g: 50,
     b: 150,
-};
-const COLOR_LIGHT_GROUND: Color = Color {
-    r: 200,
-    g: 180,
-    b: 50,
 };
 
 #[derive(Clone)]
@@ -173,34 +163,3 @@ impl Rect {
             && (self.y2 >= other.y1)
     }
 }
-
-// fn make_map(world: &mut World) {
-// let mut map = vec![vec![Tile::wall(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
-
-// assert_eq!(&objects[PLAYER] as *const _, &objects[0] as *const _);
-// objects.truncate(1);
-
-// objects[PLAYER].set_pos(starting_position.0, starting_position.1);
-
-// let (last_room_x, last_room_y) = rooms[rooms.len() - 1].center();
-// let mut stairs = Object::new(last_room_x, last_room_y, '<', "stairs", WHITE, false);
-// stairs.always_visible = true;
-// objects.push(stairs);
-
-// map
-// }
-
-// TODO: bad implementation...
-// for y in y..y + h {
-//     for x in x..x + w {
-//         world
-//             .create_entity()
-//             .with(Renderable {
-//                 color: COLOR_LIGHT_GROUND,
-//                 character: None,
-//                 arrangement: Arrangement::Background,
-//             })
-//             .with(Position { x, y })
-//             .build();
-//     }
-// }
