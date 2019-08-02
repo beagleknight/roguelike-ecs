@@ -1,4 +1,4 @@
-use crate::components::{position::Position, renderable::Renderable};
+use crate::components::{Position, Renderable};
 use specs::{Join, ReadStorage, System, WriteExpect};
 use tcod::{
   console::{Console, Root},

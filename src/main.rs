@@ -1,3 +1,5 @@
+use crate::systems::{PlayerMove, Render};
+use crate::components::{Renderable, Position, Player, Block};
 use specs::prelude::*;
 use tcod::colors::*;
 use tcod::console::*;
@@ -5,14 +7,7 @@ use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
 mod components;
-use components::block::Block;
-use components::player::Player;
-use components::position::Position;
-use components::renderable::Renderable;
-
 mod systems;
-use systems::player_move::PlayerMove;
-use systems::render::Render;
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;

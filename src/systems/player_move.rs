@@ -1,4 +1,4 @@
-use crate::components::{block::Block, player::Player, position::Position};
+use crate::components::{Block, Player, Position};
 use specs::{Join, Read, ReadStorage, System, WriteStorage};
 use tcod::input::Key;
 use tcod::input::KeyCode::{Down, Left, Right, Up};
