@@ -1,10 +1,17 @@
-use rand::Rng;
+use rand::{
+    distributions::{IndependentSample, Weighted, WeightedChoice},
+    Rng,
+};
 use specs::prelude::*;
 use std::cmp;
 use tcod::colors::Color;
+use tcod::colors::DARKER_GREEN;
+use tcod::colors::DESATURATED_GREEN;
 
 use crate::components::renderable::Arrangement;
 use crate::components::{Block, Position, Renderable};
+
+const MAX_MONSTERS: i32 = 3;
 
 const MAP_WIDTH: i32 = 80;
 const MAP_HEIGHT: i32 = 43;
@@ -35,25 +42,6 @@ impl Map {
         let tiles = vec![vec![Tile::Wall; MAP_HEIGHT as usize]; MAP_WIDTH as usize];
 
         Map { tiles }
-    }
-    fn create_room(&mut self, room: Rect) {
-        for x in (room.x1 + 1)..room.x2 {
-            for y in (room.y1 + 1)..room.y2 {
-                self.tiles[x as usize][y as usize] = Tile::Floor;
-            }
-        }
-    }
-
-    fn create_h_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
-        for x in cmp::min(x1, x2)..(cmp::max(x1, x2) + 1) {
-            self.tiles[x as usize][y as usize] = Tile::Floor;
-        }
-    }
-
-    fn create_v_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
-        for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
-            self.tiles[x as usize][y as usize] = Tile::Floor;
-        }
     }
 
     pub fn create(world: &mut World) -> Position {
@@ -89,6 +77,7 @@ impl Map {
                     }
                 }
                 rooms.push(new_room);
+                map.place_objects(new_room, world);
             }
         }
 
@@ -129,6 +118,99 @@ impl Map {
         }
 
         starting_position
+    }
+
+    fn create_room(&mut self, room: Rect) {
+        for x in (room.x1 + 1)..room.x2 {
+            for y in (room.y1 + 1)..room.y2 {
+                self.tiles[x as usize][y as usize] = Tile::Floor;
+            }
+        }
+    }
+
+    fn create_h_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
+        for x in cmp::min(x1, x2)..(cmp::max(x1, x2) + 1) {
+            self.tiles[x as usize][y as usize] = Tile::Floor;
+        }
+    }
+
+    fn create_v_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
+        for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
+            self.tiles[x as usize][y as usize] = Tile::Floor;
+        }
+    }
+
+    fn place_objects(&self, room: Rect, world: &mut World) {
+        let num_monsters = rand::thread_rng().gen_range(0, MAX_MONSTERS + 1);
+        let monster_chances = &mut [
+            Weighted {
+                weight: 80,
+                item: "orc",
+            },
+            Weighted {
+                weight: 20,
+                item: "troll",
+            },
+        ];
+        let monster_choice = WeightedChoice::new(monster_chances);
+
+        for _ in 0..num_monsters {
+            let x = rand::thread_rng().gen_range(room.x1 + 1, room.x2);
+            let y = rand::thread_rng().gen_range(room.y1 + 1, room.y2);
+
+            if true {
+                // !is_blocked(x, y, map, objects) {
+                match monster_choice.ind_sample(&mut rand::thread_rng()) {
+                    "orc" => {
+                        world
+                            .create_entity()
+                            .with(Renderable {
+                                color: DESATURATED_GREEN,
+                                character: Some('o'),
+                                arrangement: Arrangement::Foreground,
+                            })
+                            .with(Position { x, y })
+                            .with(Block)
+                            .build();
+                        // let mut orc = Object::new(x, y, 'o', "orc", DESATURATED_GREEN, true);
+                        // orc.fighter = Some(Fighter {
+                        //     hp: 20,
+                        //     base_max_hp: 20,
+                        //     base_defense: 0,
+                        //     base_power: 4,
+                        //     on_death: DeathCallback::Monster,
+                        //     xp: 35,
+                        // });
+                        // orc.ai = Some(Ai::Basic);
+                        // orc
+                    }
+                    "troll" => {
+                        world
+                            .create_entity()
+                            .with(Renderable {
+                                color: DARKER_GREEN,
+                                character: Some('T'),
+                                arrangement: Arrangement::Foreground,
+                            })
+                            .with(Position { x, y })
+                            .with(Block)
+                            .build();
+                        // let mut troll = Object::new(x, y, 'T', "troll", DARKER_GREEN, true);
+                        // troll.fighter = Some(Fighter {
+                        //     hp: 30,
+                        //     base_max_hp: 30,
+                        //     base_defense: 2,
+                        //     base_power: 8,
+                        //     on_death: DeathCallback::Monster,
+                        //     xp: 100,
+                        // });
+                        // troll.ai = Some(Ai::Basic);
+                        // troll
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
     }
 }
 
