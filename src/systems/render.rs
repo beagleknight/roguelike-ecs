@@ -1,4 +1,5 @@
 use crate::components::{Position, Renderable};
+use crate::components::renderable::{Arrangement};
 use specs::{Join, ReadStorage, System, WriteExpect};
 use tcod::{
   console::{Console, Root},
@@ -16,13 +17,25 @@ impl<'a> System<'a> for Render {
   fn run(&mut self, (mut root, renderables, positionables): Self::SystemData) {
     root.clear();
     for (renderable, position) in (&renderables, &positionables).join() {
-      root.set_default_foreground(renderable.color);
-      root.put_char(
-        position.x,
-        position.y,
-        renderable.character,
-        BackgroundFlag::None,
-      );
+      match renderable.arrangement {
+        Arrangement::Foreground => {
+          root.set_default_foreground(renderable.color);
+          root.put_char(
+            position.x,
+            position.y,
+            renderable.character.unwrap(),
+            BackgroundFlag::None,
+          );
+        }
+        Arrangement::Background => {
+          root.set_char_background(
+            position.x,
+            position.y,
+            renderable.color,
+            BackgroundFlag::Set,
+          );
+        }
+      }
     }
     root.flush();
   }

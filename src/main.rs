@@ -1,4 +1,5 @@
 use crate::components::{Block, Player, Position, Renderable};
+use crate::components::renderable::{Arrangement};
 use crate::systems::{PlayerMove, Render};
 use specs::prelude::*;
 use tcod::colors::*;
@@ -11,6 +12,12 @@ mod systems;
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
+
+const COLOR_LIGHT_GROUND: Color = Color {
+    r: 200,
+    g: 180,
+    b: 50,
+};
 
 fn main() {
     let key: Key = Default::default();
@@ -33,7 +40,8 @@ fn main() {
         .create_entity()
         .with(Renderable {
             color: GREEN,
-            character: 'o',
+            character: Some('o'),
+            arrangement: Arrangement::Foreground
         })
         .with(Position { x: 30, y: 20 })
         .with(Block)
@@ -43,7 +51,8 @@ fn main() {
         .create_entity()
         .with(Renderable {
             color: YELLOW,
-            character: '#',
+            character: Some('#'),
+            arrangement: Arrangement::Foreground
         })
         .with(Position { x: 30, y: 30 })
         .build();
@@ -52,10 +61,21 @@ fn main() {
         .create_entity()
         .with(Renderable {
             color: WHITE,
-            character: '@',
+            character: Some('@'),
+            arrangement: Arrangement::Foreground
         })
         .with(Position { x: 20, y: 20 })
         .with(Player)
+        .build();
+
+    world
+        .create_entity()
+        .with(Renderable {
+            color: COLOR_LIGHT_GROUND,
+            character: None,
+            arrangement: Arrangement::Background
+        })
+        .with(Position { x: 20, y: 20 })
         .build();
 
     world.insert(key);
