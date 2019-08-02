@@ -1,23 +1,20 @@
-use crate::components::{Block, Player, Position, Renderable};
-use crate::components::renderable::{Arrangement};
-use crate::systems::{PlayerMove, Render};
+mod components;
+mod map;
+mod systems;
+
 use specs::prelude::*;
 use tcod::colors::*;
 use tcod::console::*;
 use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
-mod components;
-mod systems;
+use crate::components::renderable::Arrangement;
+use crate::components::{Block, Player, Position, Renderable};
+use crate::map::Map;
+use crate::systems::{PlayerMove, Render};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
-
-const COLOR_LIGHT_GROUND: Color = Color {
-    r: 200,
-    g: 180,
-    b: 50,
-};
 
 fn main() {
     let key: Key = Default::default();
@@ -36,46 +33,17 @@ fn main() {
 
     dispatcher.setup(&mut world);
 
-    world
-        .create_entity()
-        .with(Renderable {
-            color: GREEN,
-            character: Some('o'),
-            arrangement: Arrangement::Foreground
-        })
-        .with(Position { x: 30, y: 20 })
-        .with(Block)
-        .build();
-
-    world
-        .create_entity()
-        .with(Renderable {
-            color: YELLOW,
-            character: Some('#'),
-            arrangement: Arrangement::Foreground
-        })
-        .with(Position { x: 30, y: 30 })
-        .build();
+    let player_starting_position = Map::create(&mut world);
 
     world
         .create_entity()
         .with(Renderable {
             color: WHITE,
             character: Some('@'),
-            arrangement: Arrangement::Foreground
+            arrangement: Arrangement::Foreground,
         })
-        .with(Position { x: 20, y: 20 })
+        .with(player_starting_position)
         .with(Player)
-        .build();
-
-    world
-        .create_entity()
-        .with(Renderable {
-            color: COLOR_LIGHT_GROUND,
-            character: None,
-            arrangement: Arrangement::Background
-        })
-        .with(Position { x: 20, y: 20 })
         .build();
 
     world.insert(key);
