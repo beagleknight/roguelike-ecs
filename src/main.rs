@@ -10,10 +10,10 @@ use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
 use crate::components::renderable::Arrangement;
-use crate::components::{Block, Player, Position, Renderable};
+use crate::components::{Block, Fighter, Player, Position, Renderable, Velocity};
 use crate::map::{Map, Tile};
 use crate::monster::{Monster, MonsterKind};
-use crate::systems::{PlayerMove, Render};
+use crate::systems::{Combat, Movement, PlayerVelocity, Render};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
@@ -36,7 +36,9 @@ fn main() {
 
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
-        .with(PlayerMove, "player_move", &[])
+        .with(PlayerVelocity, "player_velocity", &[])
+        .with(Combat, "combat", &["player_velocity"])
+        .with(Movement, "movement", &["combat"])
         .with_thread_local(Render)
         .build();
 
@@ -112,13 +114,21 @@ fn create_map(world: &mut World) -> Map {
 fn create_player(world: &mut World, map: &Map) {
     world
         .create_entity()
+        .with(Player)
         .with(Renderable {
             color: WHITE,
             character: Some('@'),
             arrangement: Arrangement::Foreground,
         })
+        .with(Fighter {
+            hp: 100,
+            base_max_hp: 100,
+            base_defense: 1,
+            base_power: 4,
+        })
         .with(map.player_starting_position.clone())
-        .with(Player)
+        .with(Velocity { x: 0, y: 0 })
+        .with(Block)
         .build();
 }
 
@@ -135,7 +145,14 @@ fn create_monsters(world: &mut World, map: &mut Map) {
                         character: Some('o'),
                         arrangement: Arrangement::Foreground,
                     })
+                    .with(Fighter {
+                        hp: 20,
+                        base_max_hp: 20,
+                        base_defense: 0,
+                        base_power: 4,
+                    })
                     .with(monster.position.clone())
+                    .with(Velocity { x: 0, y: 0 })
                     .with(Block)
                     .build();
             }
@@ -147,7 +164,14 @@ fn create_monsters(world: &mut World, map: &mut Map) {
                         character: Some('T'),
                         arrangement: Arrangement::Foreground,
                     })
+                    .with(Fighter {
+                        hp: 30,
+                        base_max_hp: 30,
+                        base_defense: 2,
+                        base_power: 8,
+                    })
                     .with(monster.position.clone())
+                    .with(Velocity { x: 0, y: 0 })
                     .with(Block)
                     .build();
             }

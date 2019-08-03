@@ -1,10 +1,9 @@
-use specs::VecStorage;
+use specs::{Component, VecStorage};
 use tcod::Color;
-use specs::Component;
 
 pub enum Arrangement {
     Foreground,
-    Background
+    Background,
 }
 
 pub struct Renderable {
