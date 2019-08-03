@@ -13,7 +13,7 @@ use crate::components::renderable::Arrangement;
 use crate::components::{Block, Fighter, Player, Position, Renderable, Velocity};
 use crate::map::{Map, Tile};
 use crate::monster::{Monster, MonsterKind};
-use crate::systems::{Combat, Movement, PlayerVelocity, Render};
+use crate::systems::{Combat, Movement, PlayerVelocity, Render, TakeDamage};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
@@ -38,7 +38,8 @@ fn main() {
     let mut dispatcher = DispatcherBuilder::new()
         .with(PlayerVelocity, "player_velocity", &[])
         .with(Combat, "combat", &["player_velocity"])
-        .with(Movement, "movement", &["combat"])
+        .with(TakeDamage, "take_damage", &["combat"])
+        .with(Movement, "movement", &["take_damage"])
         .with_thread_local(Render)
         .build();
 
@@ -53,6 +54,7 @@ fn main() {
 
     loop {
         dispatcher.dispatch(&mut world);
+        world.maintain();
 
         let mut key = world.write_resource::<Key>();
         match input::check_for_event(input::KEY_PRESS) {
