@@ -10,10 +10,10 @@ use tcod::input::Key;
 use tcod::input::{self, Event, KeyCode};
 
 use crate::components::renderable::Arrangement;
-use crate::components::{Block, Fighter, Player, Position, Renderable, Velocity};
+use crate::components::{Block, Fighter, Health, Player, Position, Renderable, Velocity};
 use crate::map::{Map, Tile};
 use crate::monster::{Monster, MonsterKind};
-use crate::systems::{Combat, Movement, PlayerVelocity, Render, TakeDamage};
+use crate::systems::{Combat, Death, Movement, PlayerVelocity, Render};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
@@ -38,8 +38,8 @@ fn main() {
     let mut dispatcher = DispatcherBuilder::new()
         .with(PlayerVelocity, "player_velocity", &[])
         .with(Combat, "combat", &["player_velocity"])
-        .with(TakeDamage, "take_damage", &["combat"])
-        .with(Movement, "movement", &["take_damage"])
+        .with(Death, "death", &["combat"])
+        .with(Movement, "movement", &["death"])
         .with_thread_local(Render)
         .build();
 
@@ -122,9 +122,11 @@ fn create_player(world: &mut World, map: &Map) {
             character: Some('@'),
             arrangement: Arrangement::Foreground,
         })
-        .with(Fighter {
+        .with(Health {
             hp: 100,
             base_max_hp: 100,
+        })
+        .with(Fighter {
             base_defense: 1,
             base_power: 4,
         })
@@ -147,9 +149,11 @@ fn create_monsters(world: &mut World, map: &mut Map) {
                         character: Some('o'),
                         arrangement: Arrangement::Foreground,
                     })
-                    .with(Fighter {
+                    .with(Health {
                         hp: 20,
                         base_max_hp: 20,
+                    })
+                    .with(Fighter {
                         base_defense: 0,
                         base_power: 4,
                     })
@@ -166,9 +170,11 @@ fn create_monsters(world: &mut World, map: &mut Map) {
                         character: Some('T'),
                         arrangement: Arrangement::Foreground,
                     })
-                    .with(Fighter {
+                    .with(Health {
                         hp: 30,
                         base_max_hp: 30,
+                    })
+                    .with(Fighter {
                         base_defense: 2,
                         base_power: 8,
                     })
