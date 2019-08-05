@@ -48,6 +48,7 @@ impl<'a> System<'a> for Render {
             );
         }
 
+        tcod.render_log();
         tcod.root.flush();
     }
 }
