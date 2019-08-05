@@ -1,7 +1,10 @@
 use rand::Rng;
+use specs::prelude::*;
 use std::cmp;
+use tcod::colors::Color;
 
-use crate::components::Position;
+use crate::components::renderable::Arrangement;
+use crate::components::{Block, Position, Renderable};
 
 const MAP_WIDTH: i32 = 80;
 const MAP_HEIGHT: i32 = 43;
@@ -9,6 +12,13 @@ const MAP_HEIGHT: i32 = 43;
 const ROOM_MAX_SIZE: i32 = 10;
 const ROOM_MIN_SIZE: i32 = 6;
 const MAX_ROOMS: i32 = 30;
+
+const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
+const COLOR_DARK_GROUND: Color = Color {
+    r: 50,
+    g: 50,
+    b: 150,
+};
 
 #[derive(Clone)]
 pub enum Tile {
@@ -101,6 +111,44 @@ impl Map {
     fn create_v_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
         for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
             self.tiles[x as usize][y as usize] = Tile::Floor;
+        }
+    }
+
+    pub fn build_entities(&self, world: &mut World) {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                match self.tiles[x as usize][y as usize] {
+                    Tile::Wall => {
+                        world
+                            .create_entity()
+                            .with(Renderable {
+                                color: COLOR_DARK_WALL,
+                                character: None,
+                                arrangement: Arrangement::Background,
+                            })
+                            .with(Position {
+                                x: x as i32,
+                                y: y as i32,
+                            })
+                            .with(Block)
+                            .build();
+                    }
+                    Tile::Floor => {
+                        world
+                            .create_entity()
+                            .with(Renderable {
+                                color: COLOR_DARK_GROUND,
+                                character: None,
+                                arrangement: Arrangement::Background,
+                            })
+                            .with(Position {
+                                x: x as i32,
+                                y: y as i32,
+                            })
+                            .build();
+                    }
+                }
+            }
         }
     }
 }

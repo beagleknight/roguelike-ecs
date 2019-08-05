@@ -4,5 +4,5 @@ use specs::{Component, NullStorage};
 pub struct Player;
 
 impl Component for Player {
-  type Storage = NullStorage<Self>;
+    type Storage = NullStorage<Self>;
 }

@@ -1,9 +1,12 @@
-use crate::components::{Position};
 use rand::{
     distributions::{IndependentSample, Weighted, WeightedChoice},
     Rng,
 };
+use specs::prelude::*;
+use tcod::colors::{DARKER_GREEN, DESATURATED_GREEN};
 
+use crate::components::renderable::Arrangement;
+use crate::components::{Block, Fighter, Health, Position, Renderable, Velocity};
 use crate::map::Map;
 
 const MAX_MONSTERS: i32 = 3;
@@ -44,7 +47,7 @@ impl Monster {
                 if !map.is_occupied(x, y) {
                     monsters.push(Monster {
                         kind: monster_choice.ind_sample(&mut rand::thread_rng()),
-                        position: Position { x, y }
+                        position: Position { x, y },
                     });
                     map.occupied_places.push(Position { x, y });
                 }
@@ -52,5 +55,54 @@ impl Monster {
         }
 
         monsters
+    }
+
+    pub fn build_entities(monsters: Vec<Monster>, world: &mut World) {
+        for monster in &monsters {
+            match monster.kind {
+                MonsterKind::Orc => {
+                    world
+                        .create_entity()
+                        .with(Renderable {
+                            color: DESATURATED_GREEN,
+                            character: Some('o'),
+                            arrangement: Arrangement::Foreground,
+                        })
+                        .with(Health {
+                            hp: 20,
+                            base_max_hp: 20,
+                        })
+                        .with(Fighter {
+                            base_defense: 0,
+                            base_power: 4,
+                        })
+                        .with(monster.position.clone())
+                        .with(Velocity { x: 0, y: 0 })
+                        .with(Block)
+                        .build();
+                }
+                MonsterKind::Troll => {
+                    world
+                        .create_entity()
+                        .with(Renderable {
+                            color: DARKER_GREEN,
+                            character: Some('T'),
+                            arrangement: Arrangement::Foreground,
+                        })
+                        .with(Health {
+                            hp: 30,
+                            base_max_hp: 30,
+                        })
+                        .with(Fighter {
+                            base_defense: 2,
+                            base_power: 8,
+                        })
+                        .with(monster.position.clone())
+                        .with(Velocity { x: 0, y: 0 })
+                        .with(Block)
+                        .build();
+                }
+            }
+        }
     }
 }

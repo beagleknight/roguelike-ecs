@@ -4,5 +4,5 @@ use specs::{Component, NullStorage};
 pub struct Block;
 
 impl Component for Block {
-  type Storage = NullStorage<Self>;
+    type Storage = NullStorage<Self>;
 }
