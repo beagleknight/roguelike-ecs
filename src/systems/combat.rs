@@ -32,7 +32,7 @@ impl<'a> System<'a> for Combat {
             (&entity, &fighter, &position, &name, &velocity).join()
         {
             for (other_entity, other_fighter, other_position, other_name) in &fighters {
-                if entity.id() != other_entity.id()
+                if entity != *other_entity
                     && other_position.x == position.x + velocity.x
                     && other_position.y == position.y + velocity.y
                 {
