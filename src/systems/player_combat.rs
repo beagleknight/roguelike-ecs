@@ -1,11 +1,11 @@
 use specs::{Entities, Entity, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::WHITE;
 
-use crate::components::{Fighter, Health, Name, Position, Velocity};
+use crate::components::{Fighter, Health, Name, Position, Velocity, Player};
 use crate::tcod::Tcod;
 
-pub struct Combat;
-impl<'a> System<'a> for Combat {
+pub struct PlayerCombat;
+impl<'a> System<'a> for PlayerCombat {
     type SystemData = (
         WriteExpect<'a, Tcod>,
         Entities<'a>,
@@ -14,29 +14,26 @@ impl<'a> System<'a> for Combat {
         ReadStorage<'a, Position>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Velocity>,
+        ReadStorage<'a, Player>,
     );
 
     fn run(
         &mut self,
-        (mut tcod, entity, mut health, fighter, position, name, velocity): Self::SystemData,
+        (mut tcod, entity, mut health, fighter, position, name, velocity, player): Self::SystemData,
     ) {
         let fighters: Vec<(Entity, Fighter, Position, Name)> =
-            (&entity, &fighter, &position, &name)
+            (&entity, &fighter, &position, &name, !&player)
                 .join()
-                .map(|(entity, fighter, position, name)| {
+                .map(|(entity, fighter, position, name, _)| {
                     (entity, fighter.clone(), position.clone(), name.clone())
                 })
                 .collect();
 
-        for (entity, fighter, position, name, velocity) in
-            (&entity, &fighter, &position, &name, &velocity).join()
+        for (fighter, position, name, velocity, _) in
+            (&fighter, &position, &name, &velocity, &player).join()
         {
             for (other_entity, other_fighter, other_position, other_name) in &fighters {
-                if entity != *other_entity
-                    && other_position.x == position.x + velocity.x
-                    && other_position.y == position.y + velocity.y
-                {
-                    // Do damage
+                if *other_position == position.clone() + velocity.clone() {
                     let damage = fighter.base_power - other_fighter.base_defense;
                     tcod.log(
                         format!(

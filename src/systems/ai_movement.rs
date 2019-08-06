@@ -1,29 +1,29 @@
-use crate::components::{Block, Position, Velocity};
 use specs::{Join, ReadStorage, System, WriteStorage};
 
-pub struct Movement;
-impl<'a> System<'a> for Movement {
+use crate::components::{Block, Position, Velocity, Player};
+
+pub struct AIMovement;
+impl<'a> System<'a> for AIMovement {
     type SystemData = (
         WriteStorage<'a, Position>,
         ReadStorage<'a, Velocity>,
         ReadStorage<'a, Block>,
+        ReadStorage<'a, Player>,
     );
 
-    fn run(&mut self, (mut position, velocity, block): Self::SystemData) {
+    fn run(&mut self, (mut position, velocity, block, player): Self::SystemData) {
         let occupied_positions: Vec<Position> = (&mut position, &block)
             .join()
             .map({ |(position, _)| position.clone() })
             .collect();
 
-        for (position, velocity) in (&mut position, &velocity).join() {
+        for (position, velocity, _) in (&mut position, &velocity, !&player).join() {
             let blocked = occupied_positions.iter().any(|occupied_position| {
-                occupied_position.x == position.x + velocity.x
-                    && occupied_position.y == position.y + velocity.y
+                *occupied_position == position.clone() + velocity.clone()
             });
 
             if !blocked {
-                position.x += velocity.x;
-                position.y += velocity.y;
+                *position = position.clone() + velocity.clone();
             }
         }
     }

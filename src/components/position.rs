@@ -1,14 +1,12 @@
-use crate::components::Velocity;
+use std::ops::Add;
 use specs::{Component, VecStorage};
 
-#[derive(Debug, Clone)]
+use crate::components::Velocity;
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
-}
-
-impl Component for Position {
-    type Storage = VecStorage<Self>;
 }
 
 impl Position {
@@ -32,4 +30,19 @@ impl Position {
 
         Velocity { x: dx, y: dy }
     }
+}
+
+impl Add<Velocity> for Position {
+    type Output = Self;
+
+    fn add(self, other: Velocity) -> Self::Output {
+        Position {
+            x: self.x + other.x,
+            y: self.y + other.y
+        }
+    }
+}
+
+impl Component for Position {
+    type Storage = VecStorage<Self>;
 }

@@ -10,7 +10,7 @@ use specs::prelude::*;
 use crate::map::Map;
 use crate::monster::Monster;
 use crate::player::Player;
-use crate::systems::{AIVelocity, Combat, Death, Movement, PlayerVelocity, Render};
+use crate::systems::{AIVelocity, PlayerCombat, AICombat, Death, PlayerMovement, AIMovement, PlayerVelocity, Render};
 use crate::tcod::{Tcod, Turn};
 
 fn main() {
@@ -18,10 +18,12 @@ fn main() {
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
         .with(PlayerVelocity, "player_velocity", &[])
-        .with(AIVelocity, "ai_velocity", &["player_velocity"])
-        .with(Combat, "combat", &["ai_velocity"])
-        .with(Death, "death", &["combat"])
-        .with(Movement, "movement", &["death"])
+        .with(PlayerCombat, "player_combat", &["player_velocity"])
+        .with(PlayerMovement, "player_movement", &["player_combat"])
+        .with(AIVelocity, "ai_velocity", &["player_movement"])
+        .with(AICombat, "ai_combat", &["ai_velocity"])
+        .with(AIMovement, "ai_movement", &["ai_combat"])
+        .with(Death, "death", &["ai_movement"])
         .with_thread_local(Render)
         .build();
 
