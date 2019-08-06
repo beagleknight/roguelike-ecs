@@ -16,9 +16,15 @@ const MSG_X: i32 = BAR_WIDTH + 2;
 const MSG_WIDTH: i32 = SCREEN_WIDTH - BAR_WIDTH - 2;
 const MSG_HEIGHT: usize = PANEL_HEIGHT as usize - 1;
 
+pub enum Turn {
+    Nothing,
+    Move,
+}
+
 pub struct Tcod {
     pub root: Root,
     pub key: Key,
+    pub player_turn: Turn,
     log: Vec<(String, Color)>,
 }
 
@@ -40,6 +46,7 @@ impl Tcod {
                 ),
                 RED,
             )],
+            player_turn: Turn::Nothing,
         }
     }
 

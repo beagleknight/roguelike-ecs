@@ -11,15 +11,15 @@ use crate::map::Map;
 use crate::monster::Monster;
 use crate::player::Player;
 use crate::systems::{AIVelocity, Combat, Death, Movement, PlayerVelocity, Render};
-use crate::tcod::Tcod;
+use crate::tcod::{Tcod, Turn};
 
 fn main() {
     let tcod = Tcod::create();
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
         .with(PlayerVelocity, "player_velocity", &[])
-        .with(AIVelocity, "ai_velocity", &[])
-        .with(Combat, "combat", &["player_velocity", "ai_velocity"])
+        .with(AIVelocity, "ai_velocity", &["player_velocity"])
+        .with(Combat, "combat", &["ai_velocity"])
         .with(Death, "death", &["combat"])
         .with(Movement, "movement", &["death"])
         .with_thread_local(Render)
@@ -44,6 +44,7 @@ fn main() {
 
         let mut tcod = world.write_resource::<Tcod>();
         tcod.key = key;
+        tcod.player_turn = Turn::Nothing;
     }
 }
 
