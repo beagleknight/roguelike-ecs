@@ -1,7 +1,7 @@
 use specs::{Entities, Entity, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::WHITE;
 
-use crate::components::{Fighter, Health, Position, Velocity};
+use crate::components::{Fighter, Health, Name, Position, Velocity};
 use crate::tcod::Tcod;
 
 pub struct Combat;
@@ -12,22 +12,26 @@ impl<'a> System<'a> for Combat {
         WriteStorage<'a, Health>,
         ReadStorage<'a, Fighter>,
         ReadStorage<'a, Position>,
+        ReadStorage<'a, Name>,
         ReadStorage<'a, Velocity>,
     );
 
     fn run(
         &mut self,
-        (mut tcod, entity, mut health, fighter, position, velocity): Self::SystemData,
+        (mut tcod, entity, mut health, fighter, position, name, velocity): Self::SystemData,
     ) {
-        let fighters: Vec<(Entity, Fighter, Position)> = (&entity, &fighter, &position)
-            .join()
-            .map(|(entity, fighter, position)| (entity, fighter.clone(), position.clone()))
-            .collect();
+        let fighters: Vec<(Entity, Fighter, Position, Name)> =
+            (&entity, &fighter, &position, &name)
+                .join()
+                .map(|(entity, fighter, position, name)| {
+                    (entity, fighter.clone(), position.clone(), name.clone())
+                })
+                .collect();
 
-        for (entity, fighter, position, velocity) in
-            (&entity, &fighter, &position, &velocity).join()
+        for (entity, fighter, position, name, velocity) in
+            (&entity, &fighter, &position, &name, &velocity).join()
         {
-            for (other_entity, other_fighter, other_position) in &fighters {
+            for (other_entity, other_fighter, other_position, other_name) in &fighters {
                 if entity.id() != other_entity.id()
                     && other_position.x == position.x + velocity.x
                     && other_position.y == position.y + velocity.y
@@ -37,9 +41,7 @@ impl<'a> System<'a> for Combat {
                     tcod.log(
                         format!(
                             "{} attacks {} for {} hit points.",
-                            entity.id(),
-                            other_entity.id(),
-                            damage
+                            name.name, other_name.name, damage
                         ),
                         WHITE,
                     );

@@ -6,7 +6,7 @@ use specs::prelude::*;
 use tcod::colors::{DARKER_GREEN, DESATURATED_GREEN};
 
 use crate::components::renderable::Arrangement;
-use crate::components::{Block, Fighter, Health, Position, Renderable, Velocity};
+use crate::components::{Block, Fighter, Health, Name, Position, Renderable, Velocity};
 use crate::map::Map;
 
 const MAX_MONSTERS: i32 = 3;
@@ -63,6 +63,9 @@ impl Monster {
                 MonsterKind::Orc => {
                     world
                         .create_entity()
+                        .with(Name {
+                            name: String::from("orc"),
+                        })
                         .with(Renderable {
                             color: DESATURATED_GREEN,
                             character: Some('o'),
@@ -84,6 +87,9 @@ impl Monster {
                 MonsterKind::Troll => {
                     world
                         .create_entity()
+                        .with(Name {
+                            name: String::from("troll"),
+                        })
                         .with(Renderable {
                             color: DARKER_GREEN,
                             character: Some('T'),
