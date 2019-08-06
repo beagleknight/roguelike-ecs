@@ -16,16 +16,15 @@ impl<'a> System<'a> for Movement {
             .collect();
 
         for (position, velocity) in (&mut position, &velocity).join() {
-            for occupied_position in &occupied_positions {
-                if occupied_position.x == position.x + velocity.x
+            let blocked = occupied_positions.iter().any(|occupied_position| {
+                occupied_position.x == position.x + velocity.x
                     && occupied_position.y == position.y + velocity.y
-                {
-                    return;
-                }
-            }
+            });
 
-            position.x += velocity.x;
-            position.y += velocity.y;
+            if !blocked {
+                position.x += velocity.x;
+                position.y += velocity.y;
+            }
         }
     }
 }

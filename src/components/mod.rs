@@ -6,6 +6,7 @@ pub mod player;
 pub mod position;
 pub mod renderable;
 pub mod velocity;
+pub mod ai_controlled;
 
 pub use block::Block;
 pub use fighter::Fighter;
@@ -15,3 +16,4 @@ pub use player::Player;
 pub use position::Position;
 pub use renderable::Renderable;
 pub use velocity::Velocity;
+pub use ai_controlled::AIControlled;
