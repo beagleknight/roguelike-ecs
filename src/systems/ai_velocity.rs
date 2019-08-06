@@ -24,9 +24,9 @@ impl<'a> System<'a> for AIVelocity {
                 }
             }
             _ => {
-                let occupied_positions: Vec<Position> = (&position, &block)
+                let occupied_positions: Vec<Position> = (&position, &block, !&player)
                     .join()
-                    .map({ |(position, _)| position.clone() })
+                    .map({ |(position, _, _)| position.clone() })
                     .collect();
                 let player_position: Position = (&position, &player)
                     .join()
@@ -35,6 +35,12 @@ impl<'a> System<'a> for AIVelocity {
                     .unwrap();
 
                 for (velocity, position, _) in (&mut velocity, &position, &ai_controlled).join() {
+                    // TODO: add fov
+                    if position.distance_to(&player_position) > 5.0 {
+                        *velocity = Velocity { x: 0, y: 0 };
+                        continue;
+                    }
+
                     let mut best_distance = Some(player_position.distance_to(&position));
                     let mut best_velocity = Some(Velocity { x: 0, y: 0 });
 
