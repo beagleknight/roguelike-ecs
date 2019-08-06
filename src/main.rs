@@ -7,10 +7,13 @@ mod tcod;
 
 use specs::prelude::*;
 
-use crate::map::Map;
+use crate::map::{FovMap, Map};
 use crate::monster::Monster;
 use crate::player::Player;
-use crate::systems::{AIVelocity, PlayerCombat, AICombat, Death, PlayerMovement, AIMovement, PlayerVelocity, Render};
+use crate::components::{Player as PlayerComponent, Position};
+use crate::systems::{
+    AICombat, AIMovement, AIVelocity, Death, PlayerCombat, PlayerMovement, PlayerVelocity, Render,
+};
 use crate::tcod::{Tcod, Turn};
 
 fn main() {
@@ -30,10 +33,13 @@ fn main() {
     dispatcher.setup(&mut world);
 
     let mut map = create_map(&mut world);
+    let fov_map = map.recompute_fov(&map.player_starting_position.clone());
+
     create_player(&mut world, &map);
     create_monsters(&mut world, &mut map);
 
     world.insert(tcod);
+    world.insert(fov_map);
 
     loop {
         dispatcher.dispatch(&mut world);
@@ -47,6 +53,14 @@ fn main() {
         let mut tcod = world.write_resource::<Tcod>();
         tcod.key = key;
         tcod.player_turn = Turn::Nothing;
+
+        let player = world.read_storage::<PlayerComponent>();
+        let position = world.read_storage::<Position>();
+
+        for (_, position) in (&player, &position).join() {
+            let mut fov_map = world.write_resource::<FovMap>();
+            *fov_map = map.recompute_fov(position);
+        }
     }
 }
 

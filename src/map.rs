@@ -1,7 +1,10 @@
 use rand::Rng;
 use specs::prelude::*;
 use std::cmp;
-use tcod::colors::Color;
+use tcod::{
+    colors::Color,
+    map::{FovAlgorithm, Map as Fov},
+};
 
 use crate::components::renderable::Arrangement;
 use crate::components::{Block, Position, Renderable};
@@ -13,6 +16,10 @@ const ROOM_MAX_SIZE: i32 = 10;
 const ROOM_MIN_SIZE: i32 = 6;
 const MAX_ROOMS: i32 = 30;
 
+const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
+const FOV_LIGHT_WALLS: bool = true;
+const TORCH_RADIUS: i32 = 10;
+
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color {
     r: 50,
@@ -20,10 +27,18 @@ const COLOR_DARK_GROUND: Color = Color {
     b: 150,
 };
 
-#[derive(Clone)]
+pub type FovMap = Vec<Vec<TileVisibility>>;
+
+#[derive(Clone, PartialEq)]
 pub enum Tile {
     Wall,
     Floor,
+}
+
+#[derive(Clone, Copy)]
+pub enum TileVisibility {
+    Visible,
+    NotVisible,
 }
 
 pub struct Map {
@@ -33,6 +48,7 @@ pub struct Map {
     pub rooms: Vec<Room>,
     pub player_starting_position: Position,
     pub occupied_places: Vec<Position>,
+    pub fov: Fov,
 }
 
 impl Map {
@@ -74,6 +90,17 @@ impl Map {
         map.occupied_places
             .push(map.player_starting_position.clone());
 
+        for y in 0..MAP_HEIGHT {
+            for x in 0..MAP_WIDTH {
+                map.fov.set(
+                    x,
+                    y,
+                    map.tiles[x as usize][y as usize] == Tile::Floor,
+                    map.tiles[x as usize][y as usize] == Tile::Floor,
+                );
+            }
+        }
+
         map
     }
 
@@ -91,6 +118,7 @@ impl Map {
             rooms: vec![],
             player_starting_position: Position { x: 0, y: 0 },
             occupied_places: vec![],
+            fov: Fov::new(MAP_WIDTH, MAP_HEIGHT),
         }
     }
 
@@ -150,6 +178,30 @@ impl Map {
                 }
             }
         }
+    }
+
+    pub fn recompute_fov(&mut self, player_position: &Position) -> FovMap {
+        let mut fov_map = vec![vec![TileVisibility::NotVisible; MAP_HEIGHT as usize]; MAP_WIDTH as usize];
+
+        self.fov.compute_fov(
+            player_position.x,
+            player_position.y,
+            TORCH_RADIUS,
+            FOV_LIGHT_WALLS,
+            FOV_ALGO,
+        );
+
+        for y in 0..MAP_HEIGHT {
+            for x in 0..MAP_WIDTH {
+                fov_map[x as usize][y as usize] = if self.fov.is_in_fov(x, y) {
+                    TileVisibility::Visible
+                } else {
+                    TileVisibility::NotVisible
+                };
+            }
+        }
+
+        fov_map
     }
 }
 
