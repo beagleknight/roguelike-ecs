@@ -1,6 +1,6 @@
 use specs::{Join, ReadStorage, System, WriteStorage};
 
-use crate::components::{Block, Position, Velocity, Player};
+use crate::components::{Block, Player, Position, Velocity};
 
 pub struct PlayerMovement;
 impl<'a> System<'a> for PlayerMovement {
@@ -18,9 +18,9 @@ impl<'a> System<'a> for PlayerMovement {
             .collect();
 
         for (position, velocity, _) in (&mut position, &velocity, &player).join() {
-            let blocked = occupied_positions.iter().any(|occupied_position| {
-                *occupied_position == position.clone() + velocity.clone()
-            });
+            let blocked = occupied_positions
+                .iter()
+                .any(|occupied_position| *occupied_position == position.clone() + velocity.clone());
 
             if !blocked {
                 *position = position.clone() + velocity.clone();

@@ -1,7 +1,7 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::WHITE;
 
-use crate::components::{Fighter, Health, Name, Position, Velocity, Player};
+use crate::components::{Fighter, Health, Name, Player, Position, Velocity};
 use crate::tcod::Tcod;
 
 pub struct AICombat;

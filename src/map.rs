@@ -21,10 +21,20 @@ const FOV_LIGHT_WALLS: bool = true;
 const TORCH_RADIUS: i32 = 10;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
+const COLOR_LIGHT_WALL: Color = Color {
+    r: 130,
+    g: 110,
+    b: 50,
+};
 const COLOR_DARK_GROUND: Color = Color {
     r: 50,
     g: 50,
     b: 150,
+};
+const COLOR_LIGHT_GROUND: Color = Color {
+    r: 200,
+    g: 180,
+    b: 50,
 };
 
 pub type FovMap = Vec<Vec<TileVisibility>>;
@@ -150,7 +160,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Renderable {
-                                color: COLOR_DARK_WALL,
+                                color: COLOR_LIGHT_WALL,
                                 character: None,
                                 arrangement: Arrangement::Background,
                             })
@@ -165,7 +175,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Renderable {
-                                color: COLOR_DARK_GROUND,
+                                color: COLOR_LIGHT_GROUND,
                                 character: None,
                                 arrangement: Arrangement::Background,
                             })
@@ -181,7 +191,8 @@ impl Map {
     }
 
     pub fn recompute_fov(&mut self, player_position: &Position) -> FovMap {
-        let mut fov_map = vec![vec![TileVisibility::NotVisible; MAP_HEIGHT as usize]; MAP_WIDTH as usize];
+        let mut fov_map =
+            vec![vec![TileVisibility::NotVisible; MAP_HEIGHT as usize]; MAP_WIDTH as usize];
 
         self.fov.compute_fov(
             player_position.x,

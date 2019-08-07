@@ -7,10 +7,10 @@ mod tcod;
 
 use specs::prelude::*;
 
+use crate::components::{Player as PlayerComponent, Position};
 use crate::map::{FovMap, Map};
 use crate::monster::Monster;
 use crate::player::Player;
-use crate::components::{Player as PlayerComponent, Position};
 use crate::systems::{
     AICombat, AIMovement, AIVelocity, Death, PlayerCombat, PlayerMovement, PlayerVelocity, Render,
 };

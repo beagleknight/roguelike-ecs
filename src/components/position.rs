@@ -1,5 +1,5 @@
-use std::ops::Add;
 use specs::{Component, VecStorage};
+use std::ops::Add;
 
 use crate::components::Velocity;
 
@@ -38,7 +38,7 @@ impl Add<Velocity> for Position {
     fn add(self, other: Velocity) -> Self::Output {
         Position {
             x: self.x + other.x,
-            y: self.y + other.y
+            y: self.y + other.y,
         }
     }
 }
