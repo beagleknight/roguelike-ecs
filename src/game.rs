@@ -1,8 +1,8 @@
-use tcod::{
-    console::*,
-    Color,
+pub use tcod::{
+    colors,
+    input::{self, Event, Key, KeyCode},
 };
-pub use tcod::{colors, input::{self, Event, Key, KeyCode}};
+use tcod::{console::*, Color};
 
 use crate::components::{Object, Position, Tile};
 use crate::map::TileKind;
@@ -78,6 +78,27 @@ impl Game {
 
     pub fn exit(key: Key) -> bool {
         key.code == KeyCode::Escape
+    }
+
+    pub fn render_health_bar(&mut self, value: i32, maximum: i32) {
+        let bar_width = (value as f32 / maximum as f32 * BAR_WIDTH as f32) as i32;
+        self.root.set_default_background(colors::DARKER_RED);
+        self.root
+            .rect(1, PANEL_Y + 1, BAR_WIDTH, 1, false, BackgroundFlag::Screen);
+        self.root.set_default_background(colors::LIGHT_RED);
+        if bar_width > 0 {
+            self.root
+                .rect(1, PANEL_Y + 1, bar_width, 1, false, BackgroundFlag::Screen);
+        }
+        self.root.set_default_background(colors::BLACK);
+        self.root.set_default_foreground(colors::WHITE);
+        self.root.print_ex(
+            1 + BAR_WIDTH / 2,
+            PANEL_Y + 1,
+            BackgroundFlag::None,
+            TextAlignment::Center,
+            &format!("{}: {}/{}", "HP", value, maximum),
+        )
     }
 
     pub fn render_log(&mut self) {
