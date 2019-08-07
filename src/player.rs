@@ -1,10 +1,7 @@
 use specs::prelude::*;
 use tcod::colors::WHITE;
 
-use crate::components::renderable::Arrangement;
-use crate::components::{
-    Block, Fighter, Health, Name, Player as PlayerComponent, Renderable, Velocity,
-};
+use crate::components::{Block, Fighter, Health, Object, Player as PlayerComponent, Velocity};
 use crate::map::Map;
 
 pub struct Player;
@@ -14,13 +11,10 @@ impl Player {
         world
             .create_entity()
             .with(PlayerComponent)
-            .with(Name {
+            .with(Object {
                 name: String::from("player"),
-            })
-            .with(Renderable {
                 color: WHITE,
-                character: Some('@'),
-                arrangement: Arrangement::Foreground,
+                character: '@',
             })
             .with(Health {
                 hp: 100,

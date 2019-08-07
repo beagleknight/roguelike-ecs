@@ -5,6 +5,9 @@ use tcod::{
     Color,
 };
 
+use crate::components::{Object, Position, Tile};
+use crate::map::TileKind;
+
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 
@@ -15,6 +18,23 @@ const PANEL_Y: i32 = SCREEN_HEIGHT - PANEL_HEIGHT;
 const MSG_X: i32 = BAR_WIDTH + 2;
 const MSG_WIDTH: i32 = SCREEN_WIDTH - BAR_WIDTH - 2;
 const MSG_HEIGHT: usize = PANEL_HEIGHT as usize - 1;
+
+const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
+const COLOR_LIGHT_WALL: Color = Color {
+    r: 130,
+    g: 110,
+    b: 50,
+};
+const COLOR_DARK_GROUND: Color = Color {
+    r: 50,
+    g: 50,
+    b: 150,
+};
+const COLOR_LIGHT_GROUND: Color = Color {
+    r: 200,
+    g: 180,
+    b: 50,
+};
 
 pub enum Turn {
     Nothing,
@@ -79,5 +99,32 @@ impl Tcod {
             self.log.remove(0);
         }
         self.log.push((message.into(), color));
+    }
+
+    pub fn render_object(&mut self, object: &Object, position: &Position, is_in_fov: bool) {
+        if is_in_fov {
+            self.root.set_default_foreground(object.color);
+            self.root.put_char(
+                position.x,
+                position.y,
+                object.character,
+                BackgroundFlag::None,
+            );
+        }
+    }
+
+    pub fn render_tile(&mut self, tile: &Tile, position: &Position, is_in_fov: bool) {
+        let tile_color = match (tile.kind, tile.explored, is_in_fov) {
+            (TileKind::Wall, true, true) => COLOR_LIGHT_WALL,
+            (TileKind::Wall, true, false) => COLOR_DARK_WALL,
+            (TileKind::Floor, true, true) => COLOR_LIGHT_GROUND,
+            (TileKind::Floor, true, false) => COLOR_DARK_GROUND,
+            _ => COLOR_DARK_GROUND,
+        };
+
+        if tile.explored || is_in_fov {
+            self.root
+                .set_char_background(position.x, position.y, tile_color, BackgroundFlag::Set);
+        }
     }
 }

@@ -2,8 +2,7 @@ use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::DARK_RED;
 use tcod::colors::ORANGE;
 
-use crate::components::renderable::Arrangement;
-use crate::components::{Health, Name, Player, Position, Renderable};
+use crate::components::{Health, Object, Player, Position};
 use crate::tcod::Tcod;
 
 pub struct Death;
@@ -14,38 +13,41 @@ impl<'a> System<'a> for Death {
         ReadStorage<'a, Health>,
         ReadStorage<'a, Player>,
         WriteStorage<'a, Position>,
-        ReadStorage<'a, Name>,
-        WriteStorage<'a, Renderable>,
+        WriteStorage<'a, Object>,
     );
 
     fn run(
         &mut self,
-        (mut tcod, entities, health, player, mut positions, name, mut renderable): Self::SystemData,
+        (mut tcod, entities, health, player, mut positions, mut objects): Self::SystemData,
     ) {
-        for (entity, health, name, _) in (&entities, &health, &name, !&player).join() {
+        let mut corpses_positions: Vec<Position> = vec![];
+
+        for (entity, health, object, position, _) in
+            (&entities, &health, &mut objects, &positions, !&player).join()
+        {
             if health.hp <= 0 {
-                let position = positions.get_mut(entity).unwrap();
-
-                entities
-                    .build_entity()
-                    .with(
-                        Renderable {
-                            color: DARK_RED,
-                            character: Some('%'),
-                            arrangement: Arrangement::Foreground,
-                        },
-                        &mut renderable,
-                    )
-                    .with(position.clone(), &mut positions)
-                    .build();
-
+                corpses_positions.push(position.clone());
                 tcod.log(
-                    format!("{} is dead! You gain {} experience points.", name.name, 0),
+                    format!("{} is dead! You gain {} experience points.", object.name, 0),
                     ORANGE,
                 );
-
                 entities.delete(entity).unwrap();
             }
+        }
+
+        for corpse_position in &corpses_positions {
+            entities
+                .build_entity()
+                .with(
+                    Object {
+                        name: String::from("corpse"),
+                        color: DARK_RED,
+                        character: '%',
+                    },
+                    &mut objects,
+                )
+                .with(corpse_position.clone(), &mut positions)
+                .build();
         }
     }
 }

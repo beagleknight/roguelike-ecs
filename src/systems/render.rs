@@ -1,8 +1,7 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
-use tcod::{console::Console, BackgroundFlag};
+use tcod::console::Console;
 
-use crate::components::renderable::Arrangement;
-use crate::components::{Player, Position, Renderable};
+use crate::components::{Object, Player, Position, Tile};
 use crate::map::{FovMap, TileVisibility};
 use crate::tcod::Tcod;
 
@@ -11,48 +10,31 @@ impl<'a> System<'a> for Render {
     type SystemData = (
         WriteExpect<'a, Tcod>,
         ReadExpect<'a, FovMap>,
-        ReadStorage<'a, Renderable>,
+        ReadStorage<'a, Object>,
+        ReadStorage<'a, Tile>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Player>,
     );
 
-    fn run(&mut self, (mut tcod, fov_map, renderables, positionables, player): Self::SystemData) {
+    fn run(&mut self, (mut tcod, fov_map, object, tile, position, player): Self::SystemData) {
         tcod.root.clear();
 
-        for (renderable, position, _) in (&renderables, &positionables, !&player).join() {
-            if let TileVisibility::Visible = fov_map[position.x as usize][position.y as usize] {
-                match renderable.arrangement {
-                    Arrangement::Foreground => {
-                        tcod.root.set_default_foreground(renderable.color);
-                        tcod.root.put_char(
-                            position.x,
-                            position.y,
-                            renderable.character.unwrap(),
-                            BackgroundFlag::None,
-                        );
-                    }
-                    Arrangement::Background => {
-                        tcod.root.set_char_background(
-                            position.x,
-                            position.y,
-                            renderable.color,
-                            BackgroundFlag::Set,
-                        );
-                    }
-                }
-            }
+        for (object, position, _) in (&object, &position, !&player).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            tcod.render_object(object, position, is_in_fov);
         }
 
-        for (renderable, position, _) in (&renderables, &positionables, &player).join() {
-            if let TileVisibility::Visible = fov_map[position.x as usize][position.y as usize] {
-                tcod.root.set_default_foreground(renderable.color);
-                tcod.root.put_char(
-                    position.x,
-                    position.y,
-                    renderable.character.unwrap(),
-                    BackgroundFlag::None,
-                );
-            }
+        for (object, position, _) in (&object, &position, &player).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            tcod.render_object(object, position, is_in_fov);
+        }
+
+        for (tile, position) in (&tile, &position).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            tcod.render_tile(tile, position, is_in_fov);
         }
 
         tcod.render_log();

@@ -1,13 +1,9 @@
 use rand::Rng;
 use specs::prelude::*;
 use std::cmp;
-use tcod::{
-    colors::Color,
-    map::{FovAlgorithm, Map as Fov},
-};
+use tcod::map::{FovAlgorithm, Map as Fov};
 
-use crate::components::renderable::Arrangement;
-use crate::components::{Block, Position, Renderable};
+use crate::components::{Block, Position, Tile};
 
 const MAP_WIDTH: i32 = 80;
 const MAP_HEIGHT: i32 = 43;
@@ -20,32 +16,15 @@ const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
 const FOV_LIGHT_WALLS: bool = true;
 const TORCH_RADIUS: i32 = 10;
 
-const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
-const COLOR_LIGHT_WALL: Color = Color {
-    r: 130,
-    g: 110,
-    b: 50,
-};
-const COLOR_DARK_GROUND: Color = Color {
-    r: 50,
-    g: 50,
-    b: 150,
-};
-const COLOR_LIGHT_GROUND: Color = Color {
-    r: 200,
-    g: 180,
-    b: 50,
-};
-
 pub type FovMap = Vec<Vec<TileVisibility>>;
 
-#[derive(Clone, PartialEq)]
-pub enum Tile {
+#[derive(Clone, Copy, PartialEq)]
+pub enum TileKind {
     Wall,
     Floor,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum TileVisibility {
     Visible,
     NotVisible,
@@ -54,7 +33,7 @@ pub enum TileVisibility {
 pub struct Map {
     pub width: i32,
     pub height: i32,
-    pub tiles: Vec<Vec<Tile>>,
+    pub tiles: Vec<Vec<TileKind>>,
     pub rooms: Vec<Room>,
     pub player_starting_position: Position,
     pub occupied_places: Vec<Position>,
@@ -105,8 +84,8 @@ impl Map {
                 map.fov.set(
                     x,
                     y,
-                    map.tiles[x as usize][y as usize] == Tile::Floor,
-                    map.tiles[x as usize][y as usize] == Tile::Floor,
+                    map.tiles[x as usize][y as usize] == TileKind::Floor,
+                    map.tiles[x as usize][y as usize] == TileKind::Floor,
                 );
             }
         }
@@ -124,7 +103,7 @@ impl Map {
         Map {
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
-            tiles: vec![vec![Tile::Wall; MAP_HEIGHT as usize]; MAP_WIDTH as usize],
+            tiles: vec![vec![TileKind::Wall; MAP_HEIGHT as usize]; MAP_WIDTH as usize],
             rooms: vec![],
             player_starting_position: Position { x: 0, y: 0 },
             occupied_places: vec![],
@@ -135,20 +114,20 @@ impl Map {
     fn create_room(&mut self, room: Room) {
         for x in (room.x1 + 1)..room.x2 {
             for y in (room.y1 + 1)..room.y2 {
-                self.tiles[x as usize][y as usize] = Tile::Floor;
+                self.tiles[x as usize][y as usize] = TileKind::Floor;
             }
         }
     }
 
     fn create_h_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
         for x in cmp::min(x1, x2)..(cmp::max(x1, x2) + 1) {
-            self.tiles[x as usize][y as usize] = Tile::Floor;
+            self.tiles[x as usize][y as usize] = TileKind::Floor;
         }
     }
 
     fn create_v_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
         for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
-            self.tiles[x as usize][y as usize] = Tile::Floor;
+            self.tiles[x as usize][y as usize] = TileKind::Floor;
         }
     }
 
@@ -156,13 +135,12 @@ impl Map {
         for y in 0..self.height {
             for x in 0..self.width {
                 match self.tiles[x as usize][y as usize] {
-                    Tile::Wall => {
+                    TileKind::Wall => {
                         world
                             .create_entity()
-                            .with(Renderable {
-                                color: COLOR_LIGHT_WALL,
-                                character: None,
-                                arrangement: Arrangement::Background,
+                            .with(Tile {
+                                explored: false,
+                                kind: TileKind::Wall,
                             })
                             .with(Position {
                                 x: x as i32,
@@ -171,13 +149,12 @@ impl Map {
                             .with(Block)
                             .build();
                     }
-                    Tile::Floor => {
+                    TileKind::Floor => {
                         world
                             .create_entity()
-                            .with(Renderable {
-                                color: COLOR_LIGHT_GROUND,
-                                character: None,
-                                arrangement: Arrangement::Background,
+                            .with(Tile {
+                                explored: false,
+                                kind: TileKind::Floor,
                             })
                             .with(Position {
                                 x: x as i32,

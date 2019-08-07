@@ -1,7 +1,7 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::WHITE;
 
-use crate::components::{Fighter, Health, Name, Player, Position, Velocity};
+use crate::components::{Fighter, Health, Object, Player, Position, Velocity};
 use crate::tcod::Tcod;
 
 pub struct AICombat;
@@ -12,33 +12,33 @@ impl<'a> System<'a> for AICombat {
         WriteStorage<'a, Health>,
         ReadStorage<'a, Fighter>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, Name>,
+        ReadStorage<'a, Object>,
         ReadStorage<'a, Velocity>,
         ReadStorage<'a, Player>,
     );
 
     fn run(
         &mut self,
-        (mut tcod, entity, mut health, fighter, position, name, velocity, player): Self::SystemData,
+        (mut tcod, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
     ) {
-        let (player_entity, player_fighter, player_position, player_name) =
-            (&entity, &fighter, &position, &name, &player)
+        let (player_entity, player_fighter, player_position, player_object) =
+            (&entity, &fighter, &position, &object, &player)
                 .join()
-                .map(|(entity, fighter, position, name, _)| {
-                    (entity, fighter.clone(), position.clone(), name.clone())
+                .map(|(entity, fighter, position, object, _)| {
+                    (entity, fighter.clone(), position.clone(), object.clone())
                 })
                 .nth(0)
                 .unwrap();
 
-        for (fighter, position, name, velocity, _) in
-            (&fighter, &position, &name, &velocity, !&player).join()
+        for (fighter, position, object, velocity, _) in
+            (&fighter, &position, &object, &velocity, !&player).join()
         {
             if player_position == position.clone() + velocity.clone() {
                 let damage = fighter.base_power - player_fighter.base_defense;
                 tcod.log(
                     format!(
                         "{} attacks {} for {} hit points.",
-                        name.name, player_name.name, damage
+                        object.name, player_object.name, damage
                     ),
                     WHITE,
                 );

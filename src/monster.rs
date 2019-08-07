@@ -5,10 +5,7 @@ use rand::{
 use specs::prelude::*;
 use tcod::colors::{DARKER_GREEN, DESATURATED_GREEN};
 
-use crate::components::renderable::Arrangement;
-use crate::components::{
-    AIControlled, Block, Fighter, Health, Name, Position, Renderable, Velocity,
-};
+use crate::components::{AIControlled, Block, Fighter, Health, Object, Position, Velocity};
 use crate::map::Map;
 
 const MAX_MONSTERS: i32 = 3;
@@ -66,13 +63,10 @@ impl Monster {
                     world
                         .create_entity()
                         .with(AIControlled)
-                        .with(Name {
+                        .with(Object {
                             name: String::from("orc"),
-                        })
-                        .with(Renderable {
                             color: DESATURATED_GREEN,
-                            character: Some('o'),
-                            arrangement: Arrangement::Foreground,
+                            character: 'o',
                         })
                         .with(Health {
                             hp: 20,
@@ -91,13 +85,10 @@ impl Monster {
                     world
                         .create_entity()
                         .with(AIControlled)
-                        .with(Name {
+                        .with(Object {
                             name: String::from("troll"),
-                        })
-                        .with(Renderable {
                             color: DARKER_GREEN,
-                            character: Some('T'),
-                            arrangement: Arrangement::Foreground,
+                            character: 'T',
                         })
                         .with(Health {
                             hp: 30,

@@ -11,15 +11,14 @@ use crate::components::{Player as PlayerComponent, Position};
 use crate::map::{FovMap, Map};
 use crate::monster::Monster;
 use crate::player::Player;
-use crate::systems::{
-    AICombat, AIMovement, AIVelocity, Death, PlayerCombat, PlayerMovement, PlayerVelocity, Render,
-};
+use crate::systems::*;
 use crate::tcod::{Tcod, Turn};
 
 fn main() {
     let tcod = Tcod::create();
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
+        .with(Explore, "explore", &[])
         .with(PlayerVelocity, "player_velocity", &[])
         .with(PlayerCombat, "player_combat", &["player_velocity"])
         .with(PlayerMovement, "player_movement", &["player_combat"])

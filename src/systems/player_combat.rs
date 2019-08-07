@@ -1,7 +1,7 @@
 use specs::{Entities, Entity, Join, ReadStorage, System, WriteExpect, WriteStorage};
 use tcod::colors::WHITE;
 
-use crate::components::{Fighter, Health, Name, Player, Position, Velocity};
+use crate::components::{Fighter, Health, Object, Player, Position, Velocity};
 use crate::tcod::Tcod;
 
 pub struct PlayerCombat;
@@ -12,33 +12,33 @@ impl<'a> System<'a> for PlayerCombat {
         WriteStorage<'a, Health>,
         ReadStorage<'a, Fighter>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, Name>,
+        ReadStorage<'a, Object>,
         ReadStorage<'a, Velocity>,
         ReadStorage<'a, Player>,
     );
 
     fn run(
         &mut self,
-        (mut tcod, entity, mut health, fighter, position, name, velocity, player): Self::SystemData,
+        (mut tcod, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
     ) {
-        let fighters: Vec<(Entity, Fighter, Position, Name)> =
-            (&entity, &fighter, &position, &name, !&player)
+        let fighters: Vec<(Entity, Fighter, Position, Object)> =
+            (&entity, &fighter, &position, &object, !&player)
                 .join()
-                .map(|(entity, fighter, position, name, _)| {
-                    (entity, fighter.clone(), position.clone(), name.clone())
+                .map(|(entity, fighter, position, object, _)| {
+                    (entity, fighter.clone(), position.clone(), object.clone())
                 })
                 .collect();
 
-        for (fighter, position, name, velocity, _) in
-            (&fighter, &position, &name, &velocity, &player).join()
+        for (fighter, position, object, velocity, _) in
+            (&fighter, &position, &object, &velocity, &player).join()
         {
-            for (other_entity, other_fighter, other_position, other_name) in &fighters {
+            for (other_entity, other_fighter, other_position, other_object) in &fighters {
                 if *other_position == position.clone() + velocity.clone() {
                     let damage = fighter.base_power - other_fighter.base_defense;
                     tcod.log(
                         format!(
                             "{} attacks {} for {} hit points.",
-                            name.name, other_name.name, damage
+                            object.name, other_object.name, damage
                         ),
                         WHITE,
                     );
