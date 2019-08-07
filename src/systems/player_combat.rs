@@ -1,13 +1,12 @@
 use specs::{Entities, Entity, Join, ReadStorage, System, WriteExpect, WriteStorage};
-use tcod::colors::WHITE;
 
 use crate::components::{Fighter, Health, Object, Player, Position, Velocity};
-use crate::tcod::Tcod;
+use crate::game::{Game, colors};
 
 pub struct PlayerCombat;
 impl<'a> System<'a> for PlayerCombat {
     type SystemData = (
-        WriteExpect<'a, Tcod>,
+        WriteExpect<'a, Game>,
         Entities<'a>,
         WriteStorage<'a, Health>,
         ReadStorage<'a, Fighter>,
@@ -19,7 +18,7 @@ impl<'a> System<'a> for PlayerCombat {
 
     fn run(
         &mut self,
-        (mut tcod, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
+        (mut game, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
     ) {
         let fighters: Vec<(Entity, Fighter, Position, Object)> =
             (&entity, &fighter, &position, &object, !&player)
@@ -35,12 +34,12 @@ impl<'a> System<'a> for PlayerCombat {
             for (other_entity, other_fighter, other_position, other_object) in &fighters {
                 if *other_position == position.clone() + velocity.clone() {
                     let damage = fighter.base_power - other_fighter.base_defense;
-                    tcod.log(
+                    game.log(
                         format!(
                             "{} attacks {} for {} hit points.",
                             object.name, other_object.name, damage
                         ),
-                        WHITE,
+                        colors::WHITE,
                     );
                     match health.get_mut(*other_entity) {
                         Some(health) => {

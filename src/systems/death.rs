@@ -1,13 +1,12 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
-use tcod::colors::{DARK_RED, ORANGE, RED};
 
 use crate::components::{Health, Object, Player, Position};
-use crate::tcod::Tcod;
+use crate::game::{Game, colors};
 
 pub struct Death;
 impl<'a> System<'a> for Death {
     type SystemData = (
-        WriteExpect<'a, Tcod>,
+        WriteExpect<'a, Game>,
         Entities<'a>,
         ReadStorage<'a, Health>,
         ReadStorage<'a, Player>,
@@ -17,7 +16,7 @@ impl<'a> System<'a> for Death {
 
     fn run(
         &mut self,
-        (mut tcod, entities, health, player, mut positions, mut objects): Self::SystemData,
+        (mut game, entities, health, player, mut positions, mut objects): Self::SystemData,
     ) {
         let mut corpses_positions: Vec<Position> = vec![];
 
@@ -26,7 +25,7 @@ impl<'a> System<'a> for Death {
         {
             if health.hp <= 0 {
                 corpses_positions.push(position.clone());
-                tcod.log(format!("{} is dead!", object.name), ORANGE);
+                game.log(format!("{} is dead!", object.name), colors::ORANGE);
                 entities.delete(entity).unwrap();
             }
         }
@@ -34,7 +33,7 @@ impl<'a> System<'a> for Death {
         for (entity, health, position, _) in (&entities, &health, &positions, &player).join() {
             if health.hp <= 0 {
                 corpses_positions.push(position.clone());
-                tcod.log(format!("You died!"), RED);
+                game.log(format!("You died!"), colors::RED);
                 entities.delete(entity).unwrap();
             }
         }
@@ -45,7 +44,7 @@ impl<'a> System<'a> for Death {
                 .with(
                     Object {
                         name: String::from("corpse"),
-                        color: DARK_RED,
+                        color: colors::DARK_RED,
                         character: '%',
                     },
                     &mut objects,

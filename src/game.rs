@@ -1,9 +1,8 @@
 use tcod::{
-    colors::RED,
     console::*,
-    input::{self, Event, Key, KeyCode},
     Color,
 };
+pub use tcod::{colors, input::{self, Event, Key, KeyCode}};
 
 use crate::components::{Object, Position, Tile};
 use crate::map::TileKind;
@@ -57,16 +56,16 @@ impl Game {
             .title("Rust/libtcod tutorial [with specs]")
             .init();
 
-        Tcod {
-            root,
+        Game {
+            player_turn: Turn::Nothing,
             key: Default::default(),
+            root,
             log: vec![(
                 String::from(
                     "Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings.",
                 ),
-                RED,
+                colors::RED,
             )],
-            player_turn: Turn::Nothing,
         }
     }
 
@@ -126,5 +125,13 @@ impl Game {
             self.root
                 .set_char_background(position.x, position.y, tile_color, BackgroundFlag::Set);
         }
+    }
+
+    pub fn clear_window(&mut self) {
+        self.root.clear();
+    }
+
+    pub fn flush(&mut self) {
+        self.root.flush();
     }
 }

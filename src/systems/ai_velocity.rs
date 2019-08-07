@@ -1,11 +1,12 @@
-use crate::components::{AIControlled, Block, Player, Position, Velocity};
-use crate::tcod::{Tcod, Turn};
 use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
+
+use crate::components::{AIControlled, Block, Player, Position, Velocity};
+use crate::game::{Game, Turn};
 
 pub struct AIVelocity;
 impl<'a> System<'a> for AIVelocity {
     type SystemData = (
-        ReadExpect<'a, Tcod>,
+        ReadExpect<'a, Game>,
         WriteStorage<'a, Velocity>,
         ReadStorage<'a, AIControlled>,
         ReadStorage<'a, Position>,
@@ -15,9 +16,9 @@ impl<'a> System<'a> for AIVelocity {
 
     fn run(
         &mut self,
-        (tcod, mut velocity, ai_controlled, position, player, block): Self::SystemData,
+        (game, mut velocity, ai_controlled, position, player, block): Self::SystemData,
     ) {
-        match tcod.player_turn {
+        match game.player_turn {
             Turn::Nothing => {
                 for (velocity, _, _) in (&mut velocity, &position, &ai_controlled).join() {
                     *velocity = Velocity { x: 0, y: 0 };
