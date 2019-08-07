@@ -21,32 +21,34 @@ impl<'a> System<'a> for AICombat {
         &mut self,
         (mut tcod, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
     ) {
-        let (player_entity, player_fighter, player_position, player_object) =
-            (&entity, &fighter, &position, &object, &player)
-                .join()
-                .map(|(entity, fighter, position, object, _)| {
-                    (entity, fighter.clone(), position.clone(), object.clone())
-                })
-                .nth(0)
-                .unwrap();
+        let player_components = (&entity, &fighter, &position, &object, &player)
+            .join()
+            .map(|(entity, fighter, position, object, _)| {
+                (entity, fighter.clone(), position.clone(), object.clone())
+            })
+            .nth(0);
 
-        for (fighter, position, object, velocity, _) in
-            (&fighter, &position, &object, &velocity, !&player).join()
+        if let Some((player_entity, player_fighter, player_position, player_object)) =
+            player_components
         {
-            if player_position == position.clone() + velocity.clone() {
-                let damage = fighter.base_power - player_fighter.base_defense;
-                tcod.log(
-                    format!(
-                        "{} attacks {} for {} hit points.",
-                        object.name, player_object.name, damage
-                    ),
-                    WHITE,
-                );
-                match health.get_mut(player_entity) {
-                    Some(health) => {
-                        health.hp -= damage;
+            for (fighter, position, object, velocity, _) in
+                (&fighter, &position, &object, &velocity, !&player).join()
+            {
+                if player_position == position.clone() + velocity.clone() {
+                    let damage = fighter.base_power - player_fighter.base_defense;
+                    tcod.log(
+                        format!(
+                            "{} attacks {} for {} hit points.",
+                            object.name, player_object.name, damage
+                        ),
+                        WHITE,
+                    );
+                    match health.get_mut(player_entity) {
+                        Some(health) => {
+                            health.hp -= damage;
+                        }
+                        None => {}
                     }
-                    None => {}
                 }
             }
         }

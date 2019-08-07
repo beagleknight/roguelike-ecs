@@ -1,6 +1,5 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
-use tcod::colors::DARK_RED;
-use tcod::colors::ORANGE;
+use tcod::colors::{DARK_RED, ORANGE, RED};
 
 use crate::components::{Health, Object, Player, Position};
 use crate::tcod::Tcod;
@@ -23,14 +22,19 @@ impl<'a> System<'a> for Death {
         let mut corpses_positions: Vec<Position> = vec![];
 
         for (entity, health, object, position, _) in
-            (&entities, &health, &mut objects, &positions, !&player).join()
+            (&entities, &health, &objects, &positions, !&player).join()
         {
             if health.hp <= 0 {
                 corpses_positions.push(position.clone());
-                tcod.log(
-                    format!("{} is dead! You gain {} experience points.", object.name, 0),
-                    ORANGE,
-                );
+                tcod.log(format!("{} is dead!", object.name), ORANGE);
+                entities.delete(entity).unwrap();
+            }
+        }
+
+        for (entity, health, position, _) in (&entities, &health, &positions, &player).join() {
+            if health.hp <= 0 {
+                corpses_positions.push(position.clone());
+                tcod.log(format!("You died!"), RED);
                 entities.delete(entity).unwrap();
             }
         }
