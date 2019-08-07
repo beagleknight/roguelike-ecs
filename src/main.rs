@@ -3,7 +3,7 @@ mod map;
 mod monster;
 mod player;
 mod systems;
-mod tcod;
+mod game;
 
 use specs::prelude::*;
 
@@ -12,10 +12,10 @@ use crate::map::{FovMap, Map};
 use crate::monster::Monster;
 use crate::player::Player;
 use crate::systems::*;
-use crate::tcod::{Tcod, Turn};
+use crate::game::{Game, Turn};
 
 fn main() {
-    let tcod = Tcod::create();
+    let game = Game::create();
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
         .with(Explore, "explore", &[])
@@ -37,21 +37,21 @@ fn main() {
     create_player(&mut world, &map);
     create_monsters(&mut world, &mut map);
 
-    world.insert(tcod);
+    world.insert(game);
     world.insert(fov_map);
 
     loop {
         dispatcher.dispatch(&mut world);
         world.maintain();
 
-        let key = Tcod::read_key();
-        if Tcod::exit(key) {
+        let key = Game::read_key();
+        if Game::exit(key) {
             break;
         }
 
-        let mut tcod = world.write_resource::<Tcod>();
-        tcod.key = key;
-        tcod.player_turn = Turn::Nothing;
+        let mut game = world.write_resource::<Game>();
+        game.key = key;
+        game.player_turn = Turn::Nothing;
 
         let player = world.read_storage::<PlayerComponent>();
         let position = world.read_storage::<Position>();

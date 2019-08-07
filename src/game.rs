@@ -41,14 +41,14 @@ pub enum Turn {
     Move,
 }
 
-pub struct Tcod {
-    pub root: Root,
-    pub key: Key,
+pub struct Game {
     pub player_turn: Turn,
+    pub key: Key,
+    root: Root,
     log: Vec<(String, Color)>,
 }
 
-impl Tcod {
+impl Game {
     pub fn create() -> Self {
         let root = Root::initializer()
             .font("terminal8x8_gs_tc.png", FontLayout::Tcod)
