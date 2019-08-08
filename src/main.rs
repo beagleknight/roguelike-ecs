@@ -1,26 +1,29 @@
 mod components;
+mod game;
 mod map;
 mod monster;
+mod item;
 mod player;
 mod systems;
-mod game;
 
 use specs::prelude::*;
 
 use crate::components::{Player as PlayerComponent, Position};
+use crate::game::{Game, Turn};
 use crate::map::{FovMap, Map};
 use crate::monster::Monster;
+use crate::item::Item;
 use crate::player::Player;
 use crate::systems::*;
-use crate::game::{Game, Turn};
 
 fn main() {
     let game = Game::create();
     let mut world = World::new();
     let mut dispatcher = DispatcherBuilder::new()
         .with(Explore, "explore", &[])
-        .with(PlayerVelocity, "player_velocity", &[])
-        .with(PlayerCombat, "player_combat", &["player_velocity"])
+        .with(PlayerAction, "player_action", &[])
+        .with(PlayerPickUp, "player_pick_up", &["player_action"])
+        .with(PlayerCombat, "player_combat", &["player_action"])
         .with(PlayerMovement, "player_movement", &["player_combat"])
         .with(AIVelocity, "ai_velocity", &["player_movement"])
         .with(AICombat, "ai_combat", &["ai_velocity"])
@@ -36,6 +39,7 @@ fn main() {
 
     create_player(&mut world, &map);
     create_monsters(&mut world, &mut map);
+    create_items(&mut world, &mut map);
 
     world.insert(game);
     world.insert(fov_map);
@@ -76,4 +80,9 @@ fn create_player(world: &mut World, map: &Map) {
 fn create_monsters(world: &mut World, map: &mut Map) {
     let monsters = Monster::place_monsters(map);
     Monster::build_entities(monsters, world);
+}
+
+fn create_items(world: &mut World, map: &mut Map) {
+    let items = Item::place_items(map);
+    Item::build_entities(items, world);
 }

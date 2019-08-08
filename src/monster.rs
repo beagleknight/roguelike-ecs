@@ -8,7 +8,7 @@ use tcod::colors::{DARKER_GREEN, DESATURATED_GREEN};
 use crate::components::{AIControlled, Block, Fighter, Health, Object, Position, Velocity};
 use crate::map::Map;
 
-const MAX_MONSTERS: i32 = 3;
+const MAX_MONSTERS: i32 = 2;
 
 #[derive(Clone)]
 pub enum MonsterKind {
@@ -33,7 +33,7 @@ impl Monster {
                     item: MonsterKind::Orc,
                 },
                 Weighted {
-                    weight: 20,
+                    weight: 0,
                     item: MonsterKind::Troll,
                 },
             ];

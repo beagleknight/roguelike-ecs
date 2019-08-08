@@ -1,7 +1,7 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
 use crate::components::{Health, Object, Player, Position};
-use crate::game::{Game, colors};
+use crate::game::{colors, Game};
 
 pub struct Death;
 impl<'a> System<'a> for Death {

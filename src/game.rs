@@ -35,9 +35,11 @@ const COLOR_LIGHT_GROUND: Color = Color {
     b: 50,
 };
 
+#[derive(PartialEq)]
 pub enum Turn {
     Nothing,
     Move,
+    PickUp
 }
 
 pub struct Game {

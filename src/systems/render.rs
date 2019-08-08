@@ -1,6 +1,6 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
-use crate::components::{Object, Player, Position, Tile, Health};
+use crate::components::{Health, Object, Pickable, Player, Position, Tile};
 use crate::game::Game;
 use crate::map::{FovMap, TileVisibility};
 
@@ -14,15 +14,28 @@ impl<'a> System<'a> for Render {
         ReadStorage<'a, Position>,
         ReadStorage<'a, Player>,
         ReadStorage<'a, Health>,
+        ReadStorage<'a, Pickable>,
     );
 
     fn run(
         &mut self,
-        (mut game, fov_map, object, tile, position, player, health): Self::SystemData,
+        (mut game, fov_map, object, tile, position, player, health, pickable): Self::SystemData,
     ) {
         game.clear_window();
 
-        for (object, position, _) in (&object, &position, !&player).join() {
+        for (tile, position) in (&tile, &position).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            game.render_tile(tile, position, is_in_fov);
+        }
+
+        for (object, position, _, _) in (&object, &position, !&player, &pickable).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            game.render_object(object, position, is_in_fov);
+        }
+
+        for (object, position, _, _) in (&object, &position, !&player, !&pickable).join() {
             let is_in_fov =
                 fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
             game.render_object(object, position, is_in_fov);
@@ -33,12 +46,6 @@ impl<'a> System<'a> for Render {
                 fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
             game.render_object(object, position, is_in_fov);
             game.render_health_bar(health.hp, health.base_max_hp);
-        }
-
-        for (tile, position) in (&tile, &position).join() {
-            let is_in_fov =
-                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
-            game.render_tile(tile, position, is_in_fov);
         }
 
         game.render_log();

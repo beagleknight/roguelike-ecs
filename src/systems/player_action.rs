@@ -3,8 +3,8 @@ use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
 use crate::components::{Player, Velocity};
 use crate::game::{Game, Key, KeyCode, Turn};
 
-pub struct PlayerVelocity;
-impl<'a> System<'a> for PlayerVelocity {
+pub struct PlayerAction;
+impl<'a> System<'a> for PlayerAction {
     type SystemData = (
         WriteExpect<'a, Game>,
         WriteStorage<'a, Velocity>,
@@ -40,6 +40,12 @@ impl<'a> System<'a> for PlayerVelocity {
                 } => {
                     *velocity = Velocity { x: 1, y: 0 };
                     game.player_turn = Turn::Move;
+                }
+                Key {
+                    printable: 'g',
+                    ..
+                } => {
+                    game.player_turn = Turn::PickUp;
                 }
                 _ => {
                     *velocity = Velocity { x: 0, y: 0 };
