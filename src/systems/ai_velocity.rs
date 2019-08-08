@@ -2,11 +2,13 @@ use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
 
 use crate::components::{AIControlled, Block, Player, Position, Velocity};
 use crate::game::{Game, Turn};
+use crate::map::{FovMap, TileVisibility};
 
 pub struct AIVelocity;
 impl<'a> System<'a> for AIVelocity {
     type SystemData = (
         ReadExpect<'a, Game>,
+        ReadExpect<'a, FovMap>,
         WriteStorage<'a, Velocity>,
         ReadStorage<'a, AIControlled>,
         ReadStorage<'a, Position>,
@@ -16,7 +18,7 @@ impl<'a> System<'a> for AIVelocity {
 
     fn run(
         &mut self,
-        (game, mut velocity, ai_controlled, position, player, block): Self::SystemData,
+        (game, fov_map, mut velocity, ai_controlled, position, player, block): Self::SystemData,
     ) {
         match game.player_turn {
             Turn::Nothing => {
@@ -37,8 +39,9 @@ impl<'a> System<'a> for AIVelocity {
                 if let Some(player_position) = player_position {
                     for (velocity, position, _) in (&mut velocity, &position, &ai_controlled).join()
                     {
-                        // TODO: add fov
-                        if position.distance_to(&player_position) > 5.0 {
+                        if fov_map[position.x as usize][position.y as usize]
+                            == TileVisibility::NotVisible
+                        {
                             *velocity = Velocity { x: 0, y: 0 };
                             continue;
                         }
