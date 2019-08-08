@@ -1,7 +1,9 @@
 use specs::prelude::*;
 use tcod::colors::WHITE;
 
-use crate::components::{Block, Fighter, Health, Object, Player as PlayerComponent, Velocity, Inventory};
+use crate::components::{
+    Block, Fighter, Health, Inventory, Object, Player as PlayerComponent, Velocity,
+};
 use crate::map::Map;
 
 pub struct Player;

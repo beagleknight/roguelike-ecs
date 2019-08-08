@@ -37,7 +37,6 @@ fn main() {
 
     let mut map = create_map(&mut world);
     let fov_map = map.recompute_fov(&map.player_starting_position.clone());
-
     create_player(&mut world, &map);
     create_monsters(&mut world, &mut map);
     create_items(&mut world, &mut map);
@@ -49,15 +48,7 @@ fn main() {
         dispatcher.dispatch(&mut world);
         world.maintain();
 
-        let key = Game::read_key();
-        if Game::exit(key) {
-            break;
-        }
-
         let mut game = world.write_resource::<Game>();
-        game.key = key;
-        game.player_turn = Turn::Nothing;
-
         let player = world.read_storage::<PlayerComponent>();
         let position = world.read_storage::<Position>();
 
@@ -65,6 +56,13 @@ fn main() {
             let mut fov_map = world.write_resource::<FovMap>();
             *fov_map = map.recompute_fov(position);
         }
+
+        let key = Game::read_key();
+        if Game::exit(key) {
+            break;
+        }
+        game.key = key;
+        game.player_turn = Turn::Nothing;
     }
 }
 

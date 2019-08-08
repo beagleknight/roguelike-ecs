@@ -40,12 +40,13 @@ pub enum Turn {
     Nothing,
     Move,
     PickUp,
-    Drop
+    Drop(usize),
 }
 
 pub struct Game {
     pub player_turn: Turn,
     pub key: Key,
+    pub inventory_opened: bool,
     root: Root,
     log: Vec<(String, Color)>,
 }
@@ -62,6 +63,7 @@ impl Game {
         Game {
             player_turn: Turn::Nothing,
             key: Default::default(),
+            inventory_opened: false,
             root,
             log: vec![(
                 String::from(
@@ -156,6 +158,58 @@ impl Game {
     }
 
     pub fn flush(&mut self) {
+        self.root.flush();
+    }
+
+    pub fn show_inventory_menu<T: AsRef<str>>(&mut self, header: &str, options: &[T], width: i32) {
+        assert!(
+            options.len() <= 26,
+            "Cannot have a menu with more than 26 options."
+        );
+        let header_height = if header.is_empty() {
+            0
+        } else {
+            self.root
+                .get_height_rect(0, 0, width, SCREEN_HEIGHT, header)
+        };
+        let height = options.len() as i32 + header_height;
+
+        let mut window = Offscreen::new(width, height);
+        window.set_default_foreground(colors::WHITE);
+        window.print_rect_ex(
+            0,
+            0,
+            width,
+            height,
+            BackgroundFlag::None,
+            TextAlignment::Left,
+            header,
+        );
+
+        for (index, option_text) in options.iter().enumerate() {
+            let menu_letter = (b'a' + index as u8) as char;
+            let text = format!("({}) {}", menu_letter, option_text.as_ref());
+            window.print_ex(
+                0,
+                header_height + index as i32,
+                BackgroundFlag::None,
+                TextAlignment::Left,
+                text,
+            );
+        }
+
+        let x = SCREEN_WIDTH / 2 - width / 2;
+        let y = SCREEN_HEIGHT / 2 - height / 2;
+        blit(
+            &mut window,
+            (0, 0),
+            (width, height),
+            &mut self.root,
+            (x, y),
+            1.0,
+            0.7,
+        );
+
         self.root.flush();
     }
 }
