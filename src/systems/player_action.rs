@@ -41,11 +41,11 @@ impl<'a> System<'a> for PlayerAction {
                     *velocity = Velocity { x: 1, y: 0 };
                     game.player_turn = Turn::Move;
                 }
-                Key {
-                    printable: 'g',
-                    ..
-                } => {
+                Key { printable: 'g', .. } => {
                     game.player_turn = Turn::PickUp;
+                }
+                Key { printable: 'd', .. } => {
+                    game.player_turn = Turn::Drop;
                 }
                 _ => {
                     *velocity = Velocity { x: 0, y: 0 };

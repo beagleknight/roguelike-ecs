@@ -39,7 +39,8 @@ const COLOR_LIGHT_GROUND: Color = Color {
 pub enum Turn {
     Nothing,
     Move,
-    PickUp
+    PickUp,
+    Drop
 }
 
 pub struct Game {

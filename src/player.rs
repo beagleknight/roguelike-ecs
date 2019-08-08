@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use tcod::colors::WHITE;
 
-use crate::components::{Block, Fighter, Health, Object, Player as PlayerComponent, Velocity};
+use crate::components::{Block, Fighter, Health, Object, Player as PlayerComponent, Velocity, Inventory};
 use crate::map::Map;
 
 pub struct Player;
@@ -24,6 +24,7 @@ impl Player {
                 base_defense: 1,
                 base_power: 4,
             })
+            .with(Inventory { objects: vec![] })
             .with(map.player_starting_position.clone())
             .with(Velocity { x: 0, y: 0 })
             .with(Block)

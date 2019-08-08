@@ -8,6 +8,7 @@ pub mod player;
 pub mod position;
 pub mod tile;
 pub mod velocity;
+pub mod inventory;
 
 pub use ai_controlled::AIControlled;
 pub use block::Block;
@@ -19,3 +20,4 @@ pub use player::Player;
 pub use position::Position;
 pub use tile::Tile;
 pub use velocity::Velocity;
+pub use inventory::Inventory;

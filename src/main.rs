@@ -1,8 +1,8 @@
 mod components;
 mod game;
+mod item;
 mod map;
 mod monster;
-mod item;
 mod player;
 mod systems;
 
@@ -10,9 +10,9 @@ use specs::prelude::*;
 
 use crate::components::{Player as PlayerComponent, Position};
 use crate::game::{Game, Turn};
+use crate::item::Item;
 use crate::map::{FovMap, Map};
 use crate::monster::Monster;
-use crate::item::Item;
 use crate::player::Player;
 use crate::systems::*;
 
@@ -23,6 +23,7 @@ fn main() {
         .with(Explore, "explore", &[])
         .with(PlayerAction, "player_action", &[])
         .with(PlayerPickUp, "player_pick_up", &["player_action"])
+        .with(PlayerDrop, "player_drop", &["player_action"])
         .with(PlayerCombat, "player_combat", &["player_action"])
         .with(PlayerMovement, "player_movement", &["player_combat"])
         .with(AIVelocity, "ai_velocity", &["player_movement"])
