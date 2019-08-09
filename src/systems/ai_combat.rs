@@ -1,7 +1,7 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
 use crate::components::{Fighter, Health, Object, Player, Position, Velocity};
-use crate::game::{Game, colors};
+use crate::game::{colors, Game};
 
 pub struct AICombat;
 impl<'a> System<'a> for AICombat {

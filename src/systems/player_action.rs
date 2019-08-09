@@ -1,7 +1,7 @@
 use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
 
 use crate::components::{Inventory, Player, Velocity};
-use crate::game::{Game, Key, KeyCode, Turn, InventoryAction};
+use crate::game::{Game, InventoryAction, Key, KeyCode, Turn};
 
 pub struct PlayerAction;
 impl<'a> System<'a> for PlayerAction {
@@ -20,9 +20,9 @@ impl<'a> System<'a> for PlayerAction {
                     let inventory_action = game.inventory_action.take();
                     if index < inventory.objects.len() {
                         match inventory_action {
-                            Some(InventoryAction::Drop) =>  game.player_turn = Turn::Drop(index),
-                            Some(InventoryAction::Use) =>  game.player_turn = Turn::Use(index),
-                            None => unreachable!()
+                            Some(InventoryAction::Drop) => game.player_turn = Turn::Drop(index),
+                            Some(InventoryAction::Use) => game.player_turn = Turn::Use(index),
+                            None => unreachable!(),
                         }
                     }
                 }

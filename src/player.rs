@@ -1,12 +1,12 @@
 use specs::prelude::*;
 use tcod::colors::WHITE;
 
-use crate::components::{
-    Block, Fighter, Health, Inventory, Object, Player as PlayerComponent, Velocity, Equipment
-};
 use crate::components::equipment::Slot;
-use crate::map::Map;
+use crate::components::{
+    Block, Equipment, Fighter, Health, Inventory, Object, Player as PlayerComponent, Velocity,
+};
 use crate::item::SlotKind;
+use crate::map::Map;
 
 pub struct Player;
 
@@ -29,20 +29,22 @@ impl Player {
                 base_power: 4,
             })
             .with(Inventory { objects: vec![] })
-            .with(Equipment { slots: vec![
-                Slot {
-                    kind: SlotKind::LeftHand,
-                    object: None
-                },
-                Slot {
-                    kind: SlotKind::RightHand,
-                    object: None
-                },
-                Slot {
-                    kind: SlotKind::Head,
-                    object: None
-                }
-            ] })
+            .with(Equipment {
+                slots: vec![
+                    Slot {
+                        kind: SlotKind::LeftHand,
+                        object: None,
+                    },
+                    Slot {
+                        kind: SlotKind::RightHand,
+                        object: None,
+                    },
+                    Slot {
+                        kind: SlotKind::Head,
+                        object: None,
+                    },
+                ],
+            })
             .with(map.player_starting_position.clone())
             .with(Velocity { x: 0, y: 0 })
             .with(Block)

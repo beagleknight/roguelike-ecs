@@ -1,6 +1,8 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
-use crate::components::{Equipable, Health, Inventory, Object, Pickable, Player, Position, Tile, Equipment};
+use crate::components::{
+    Equipable, Equipment, Health, Inventory, Object, Pickable, Player, Position, Tile,
+};
 use crate::game::{Game, InventoryAction};
 use crate::map::{FovMap, TileVisibility};
 
@@ -79,7 +81,10 @@ impl<'a> System<'a> for Render {
 
                         if let Some(item_equipable) = item_equipable {
                             if equipment.has_equiped(item_entity, item_equipable) {
-                                return format!("{} (on {})", item_object.name, item_equipable.slot);
+                                return format!(
+                                    "{} (on {})",
+                                    item_object.name, item_equipable.slot
+                                );
                             }
                         }
                         item_object.name.clone()

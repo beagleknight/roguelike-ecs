@@ -1,6 +1,6 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
-use crate::components::{Health, Inventory, Player, Usable};
+use crate::components::*;
 use crate::game::{colors, Game, Turn};
 use crate::item::ItemKind;
 
@@ -12,6 +12,9 @@ impl<'a> System<'a> for PlayerUse {
     type SystemData = (
         Entities<'a>,
         WriteExpect<'a, Game>,
+        ReadStorage<'a, Object>,
+        ReadStorage<'a, Equipable>,
+        WriteStorage<'a, Equipment>,
         ReadStorage<'a, Usable>,
         WriteStorage<'a, Health>,
         ReadStorage<'a, Player>,
@@ -20,10 +23,22 @@ impl<'a> System<'a> for PlayerUse {
 
     fn run(
         &mut self,
-        (entities, mut game, usables, mut health, player, mut inventories): Self::SystemData,
+        (
+            entities,
+            mut game,
+            objects,
+            equipables,
+            mut equipments,
+            usables,
+            mut health,
+            player,
+            mut inventories,
+        ): Self::SystemData,
     ) {
         if let Turn::Use(inventory_index) = game.player_turn {
-            for (health, inventory, _) in (&mut health, &mut inventories, &player).join() {
+            for (health, inventory, equipment, _) in
+                (&mut health, &mut inventories, &mut equipments, &player).join()
+            {
                 let item_entity = inventory.objects[inventory_index];
                 if let Some(item_usable) = usables.get(item_entity) {
                     inventory.objects.remove(inventory_index);
@@ -38,6 +53,25 @@ impl<'a> System<'a> for PlayerUse {
                         _ => unreachable!(),
                     }
                     entities.delete(item_entity).unwrap();
+                } else if let Some(item_equipable) = equipables.get(item_entity) {
+                    let item_object = objects.get(item_entity).unwrap();
+
+                    if equipment.has_equiped(item_entity, item_equipable) {
+                        equipment.dequip(item_equipable);
+                        game.log(
+                            format!(
+                                "Dequipped {} from {}.",
+                                item_object.name, item_equipable.slot
+                            ),
+                            colors::LIGHT_YELLOW,
+                        );
+                    } else {
+                        equipment.equip(item_entity, item_equipable);
+                        game.log(
+                            format!("Equipped {} on {}.", item_object.name, item_equipable.slot),
+                            colors::LIGHT_GREEN,
+                        );
+                    }
                 }
             }
         }
