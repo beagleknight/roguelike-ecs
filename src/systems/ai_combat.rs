@@ -1,6 +1,6 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
-use crate::components::{Fighter, Health, Object, Player, Position, Velocity};
+use crate::components::*;
 use crate::game::{colors, Game};
 
 pub struct AICombat;
@@ -14,11 +14,12 @@ impl<'a> System<'a> for AICombat {
         ReadStorage<'a, Object>,
         ReadStorage<'a, Velocity>,
         ReadStorage<'a, Player>,
+        ReadStorage<'a, Equipment>,
     );
 
     fn run(
         &mut self,
-        (mut game, entity, mut health, fighter, position, object, velocity, player): Self::SystemData,
+        (mut game, entity, mut health, fighter, position, object, velocity, player, equipments): Self::SystemData,
     ) {
         let player_components = (&entity, &fighter, &position, &object, &player)
             .join()
@@ -30,11 +31,19 @@ impl<'a> System<'a> for AICombat {
         if let Some((player_entity, player_fighter, player_position, player_object)) =
             player_components
         {
-            for (fighter, position, object, velocity, _) in
-                (&fighter, &position, &object, &velocity, !&player).join()
+            for (entity, fighter, position, object, velocity, _) in
+                (&entity, &fighter, &position, &object, &velocity, !&player).join()
             {
                 if player_position == position.clone() + velocity.clone() {
-                    let damage = fighter.base_power - player_fighter.base_defense;
+                    let equipment_power = equipments
+                        .get(entity)
+                        .map_or(0, |equipment| equipment.power());
+                    let equipment_defense = equipments
+                        .get(player_entity)
+                        .map_or(0, |equipment| equipment.defense());
+                    let power = fighter.base_power + equipment_power;
+                    let defense = player_fighter.base_defense + equipment_defense;
+                    let damage = power - defense;
                     game.log(
                         format!(
                             "{} attacks {} for {} hit points.",

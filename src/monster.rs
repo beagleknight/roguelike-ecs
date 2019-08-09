@@ -3,9 +3,11 @@ use rand::{
     Rng,
 };
 use specs::prelude::*;
-use tcod::colors::{DARKER_GREEN, DESATURATED_GREEN};
+use tcod::colors::{DARKER_GREEN, DARKEST_GREEN, DESATURATED_GREEN};
 
-use crate::components::{AIControlled, Block, Fighter, Health, Object, Position, Velocity};
+use crate::components::equipment::Slot;
+use crate::components::*;
+use crate::item::{Item, SlotKind};
 use crate::map::Map;
 
 const MAX_MONSTERS: i32 = 2;
@@ -13,6 +15,7 @@ const MAX_MONSTERS: i32 = 2;
 #[derive(Clone)]
 pub enum MonsterKind {
     Orc,
+    OrcCaptain,
     Troll,
 }
 
@@ -29,11 +32,15 @@ impl Monster {
             let num_monsters = rand::thread_rng().gen_range(0, MAX_MONSTERS + 1);
             let monster_chances = &mut [
                 Weighted {
-                    weight: 80,
+                    weight: 40,
                     item: MonsterKind::Orc,
                 },
                 Weighted {
-                    weight: 0,
+                    weight: 40,
+                    item: MonsterKind::OrcCaptain,
+                },
+                Weighted {
+                    weight: 10,
                     item: MonsterKind::Troll,
                 },
             ];
@@ -78,6 +85,42 @@ impl Monster {
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
+                        .with(Block)
+                        .build();
+                }
+                MonsterKind::OrcCaptain => {
+                    let right_hand_equipment = Item::create_dagger_entity(world, None);
+                    let head_equipment = Item::create_helmet_entity(world, None);
+                    world
+                        .create_entity()
+                        .with(AIControlled)
+                        .with(Object {
+                            name: String::from("orc captain"),
+                            color: DARKEST_GREEN,
+                            character: 'o',
+                        })
+                        .with(Health {
+                            hp: 20,
+                            base_max_hp: 20,
+                        })
+                        .with(Fighter {
+                            base_defense: 0,
+                            base_power: 4,
+                        })
+                        .with(monster.position.clone())
+                        .with(Velocity { x: 0, y: 0 })
+                        .with(Equipment {
+                            slots: vec![
+                                Slot {
+                                    kind: SlotKind::RightHand,
+                                    object: Some(right_hand_equipment),
+                                },
+                                Slot {
+                                    kind: SlotKind::Head,
+                                    object: Some(head_equipment),
+                                },
+                            ],
+                        })
                         .with(Block)
                         .build();
                 }

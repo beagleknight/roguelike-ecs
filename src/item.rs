@@ -14,9 +14,11 @@ const MAX_ITEMS: i32 = 3;
 pub enum ItemKind {
     HealthPotion,
     Sword,
+    Dagger,
+    Helmet,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum SlotKind {
     LeftHand,
     RightHand,
@@ -46,12 +48,20 @@ impl Item {
             let num_items = rand::thread_rng().gen_range(0, MAX_ITEMS + 1);
             let item_chances = &mut [
                 Weighted {
-                    weight: 50,
+                    weight: 60,
                     item: ItemKind::HealthPotion,
                 },
                 Weighted {
-                    weight: 50,
+                    weight: 20,
+                    item: ItemKind::Dagger,
+                },
+                Weighted {
+                    weight: 10,
                     item: ItemKind::Sword,
+                },
+                Weighted {
+                    weight: 10,
+                    item: ItemKind::Helmet,
                 },
             ];
             let item_choice = WeightedChoice::new(item_chances);
@@ -109,7 +119,71 @@ impl Item {
                         })
                         .build();
                 }
+                ItemKind::Dagger => {
+                    Item::create_dagger_entity(world, Some(item.position.clone()));
+                }
+                ItemKind::Helmet => {
+                    Item::create_helmet_entity(world, Some(item.position.clone()));
+                }
             }
         }
+    }
+
+    pub fn create_dagger_entity(
+        world: &mut World,
+        position: Option<Position>,
+    ) -> (Entity, Equipable) {
+        let equipable = Equipable {
+            max_hp_bonus: 0,
+            power_bonus: 1,
+            defense_bonus: 0,
+            slot: SlotKind::RightHand,
+        };
+        let entity_builder = world
+            .create_entity()
+            .with(Object {
+                name: String::from("dagger"),
+                color: colors::SKY,
+                character: '-',
+            })
+            .with(Pickable)
+            .with(equipable);
+
+        let entity_builder = if let Some(position) = position {
+            entity_builder.with(position)
+        } else {
+            entity_builder
+        };
+
+        (entity_builder.build(), equipable)
+    }
+
+    pub fn create_helmet_entity(
+        world: &mut World,
+        position: Option<Position>,
+    ) -> (Entity, Equipable) {
+        let equipable = Equipable {
+            max_hp_bonus: 0,
+            power_bonus: 0,
+            defense_bonus: 1,
+            slot: SlotKind::Head,
+        };
+        let entity_builder = world
+            .create_entity()
+            .with(Object {
+                name: String::from("helmet"),
+                color: colors::DARKER_ORANGE,
+                character: 'c',
+            })
+            .with(Pickable)
+            .with(equipable);
+
+        let entity_builder = if let Some(position) = position {
+            entity_builder.with(position)
+        } else {
+            entity_builder
+        };
+
+        (entity_builder.build(), equipable)
     }
 }
