@@ -25,6 +25,7 @@ fn main() {
         .with(PlayerPickUp, "player_pick_up", &["player_action"])
         .with(PlayerDrop, "player_drop", &["player_action"])
         .with(PlayerUse, "player_use", &["player_action"])
+        .with(PlayerEquip, "player_equip", &["player_action"])
         .with(PlayerCombat, "player_combat", &["player_action"])
         .with(PlayerMovement, "player_movement", &["player_combat"])
         .with(AIVelocity, "ai_velocity", &["player_movement"])

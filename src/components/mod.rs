@@ -9,6 +9,9 @@ pub mod position;
 pub mod tile;
 pub mod velocity;
 pub mod inventory;
+pub mod usable;
+pub mod equipable;
+pub mod equipment;
 
 pub use ai_controlled::AIControlled;
 pub use block::Block;
@@ -21,3 +24,6 @@ pub use position::Position;
 pub use tile::Tile;
 pub use velocity::Velocity;
 pub use inventory::Inventory;
+pub use usable::Usable;
+pub use equipable::Equipable;
+pub use equipment::Equipment;

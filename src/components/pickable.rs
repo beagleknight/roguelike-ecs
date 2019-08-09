@@ -1,11 +1,8 @@
-use specs::{Component, VecStorage};
+use specs::{Component, NullStorage};
 
-use crate::item::ItemKind;
-
-pub struct Pickable {
-    pub kind: ItemKind
-}
+#[derive(Default)]
+pub struct Pickable;
 
 impl Component for Pickable {
-    type Storage = VecStorage<Self>;
+    type Storage = NullStorage<Self>;
 }

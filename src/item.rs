@@ -3,9 +3,9 @@ use rand::{
     Rng,
 };
 use specs::prelude::*;
-use tcod::colors::VIOLET;
 
-use crate::components::{AIControlled, Object, Pickable, Position};
+use crate::components::{Equipable, Object, Pickable, Position, Usable};
+use crate::game::colors;
 use crate::map::Map;
 
 const MAX_ITEMS: i32 = 3;
@@ -13,6 +13,24 @@ const MAX_ITEMS: i32 = 3;
 #[derive(Clone, Copy, PartialEq)]
 pub enum ItemKind {
     HealthPotion,
+    Sword,
+}
+
+#[derive(PartialEq)]
+pub enum SlotKind {
+    LeftHand,
+    RightHand,
+    Head,
+}
+
+impl std::fmt::Display for SlotKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match *self {
+            SlotKind::LeftHand => write!(f, "left hand"),
+            SlotKind::RightHand => write!(f, "right hand"),
+            SlotKind::Head => write!(f, "head"),
+        }
+    }
 }
 
 pub struct Item {
@@ -26,10 +44,16 @@ impl Item {
 
         for room in &map.rooms {
             let num_items = rand::thread_rng().gen_range(0, MAX_ITEMS + 1);
-            let item_chances = &mut [Weighted {
-                weight: 100,
-                item: ItemKind::HealthPotion,
-            }];
+            let item_chances = &mut [
+                Weighted {
+                    weight: 50,
+                    item: ItemKind::HealthPotion,
+                },
+                Weighted {
+                    weight: 50,
+                    item: ItemKind::Sword,
+                },
+            ];
             let item_choice = WeightedChoice::new(item_chances);
 
             for _ in 0..num_items {
@@ -55,15 +79,33 @@ impl Item {
                 ItemKind::HealthPotion => {
                     world
                         .create_entity()
-                        .with(AIControlled)
                         .with(Object {
                             name: String::from("healing potion"),
-                            color: VIOLET,
+                            color: colors::VIOLET,
                             character: '!',
                         })
                         .with(item.position.clone())
-                        .with(Pickable {
+                        .with(Pickable)
+                        .with(Usable {
                             kind: ItemKind::HealthPotion,
+                        })
+                        .build();
+                }
+                ItemKind::Sword => {
+                    world
+                        .create_entity()
+                        .with(Object {
+                            name: String::from("sword"),
+                            color: colors::SKY,
+                            character: '/',
+                        })
+                        .with(item.position.clone())
+                        .with(Pickable)
+                        .with(Equipable {
+                            max_hp_bonus: 0,
+                            power_bonus: 3,
+                            defense_bonus: 0,
+                            slot: SlotKind::RightHand,
                         })
                         .build();
                 }

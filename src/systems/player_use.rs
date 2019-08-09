@@ -1,6 +1,6 @@
-use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
+use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
-use crate::components::{Health, Inventory, Pickable, Player};
+use crate::components::{Health, Inventory, Player, Usable};
 use crate::game::{colors, Game, Turn};
 use crate::item::ItemKind;
 
@@ -10,8 +10,9 @@ pub struct PlayerUse;
 
 impl<'a> System<'a> for PlayerUse {
     type SystemData = (
+        Entities<'a>,
         WriteExpect<'a, Game>,
-        ReadStorage<'a, Pickable>,
+        ReadStorage<'a, Usable>,
         WriteStorage<'a, Health>,
         ReadStorage<'a, Player>,
         WriteStorage<'a, Inventory>,
@@ -19,13 +20,14 @@ impl<'a> System<'a> for PlayerUse {
 
     fn run(
         &mut self,
-        (mut game, pickables, mut health, player, mut inventories): Self::SystemData,
+        (entities, mut game, usables, mut health, player, mut inventories): Self::SystemData,
     ) {
         if let Turn::Use(inventory_index) = game.player_turn {
             for (health, inventory, _) in (&mut health, &mut inventories, &player).join() {
-                let item_entity = inventory.objects.remove(inventory_index);
-                if let Some(item_pickable) = pickables.get(item_entity) {
-                    match item_pickable.kind {
+                let item_entity = inventory.objects[inventory_index];
+                if let Some(item_usable) = usables.get(item_entity) {
+                    inventory.objects.remove(inventory_index);
+                    match item_usable.kind {
                         ItemKind::HealthPotion => {
                             game.log("Your wounds start to feel better!", colors::LIGHT_VIOLET);
                             health.hp += HEAL_AMOUNT;
@@ -33,7 +35,9 @@ impl<'a> System<'a> for PlayerUse {
                                 health.hp = health.base_max_hp;
                             }
                         }
+                        _ => unreachable!(),
                     }
+                    entities.delete(item_entity).unwrap();
                 }
             }
         }
