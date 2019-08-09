@@ -16,7 +16,7 @@ pub enum ItemKind {
     Sword,
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum SlotKind {
     LeftHand,
     RightHand,
