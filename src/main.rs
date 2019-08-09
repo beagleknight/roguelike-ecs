@@ -24,6 +24,7 @@ fn main() {
         .with(PlayerAction, "player_action", &[])
         .with(PlayerPickUp, "player_pick_up", &["player_action"])
         .with(PlayerDrop, "player_drop", &["player_action"])
+        .with(PlayerUse, "player_use", &["player_action"])
         .with(PlayerCombat, "player_combat", &["player_action"])
         .with(PlayerMovement, "player_movement", &["player_combat"])
         .with(AIVelocity, "ai_velocity", &["player_movement"])
@@ -58,7 +59,7 @@ fn main() {
         }
 
         let key = Game::read_key();
-        if Game::exit(key) {
+        if game.exit(key) {
             break;
         }
         game.key = key;

@@ -1,7 +1,7 @@
 use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
 
 use crate::components::{Inventory, Player, Velocity};
-use crate::game::{Game, Key, KeyCode, Turn};
+use crate::game::{Game, Key, KeyCode, Turn, InventoryAction};
 
 pub struct PlayerAction;
 impl<'a> System<'a> for PlayerAction {
@@ -14,17 +14,17 @@ impl<'a> System<'a> for PlayerAction {
 
     fn run(&mut self, (mut game, mut velocity, inventory, player): Self::SystemData) {
         for (velocity, inventory, _) in (&mut velocity, &inventory, &player).join() {
-            if game.inventory_opened {
+            if game.inventory_action.is_some() {
                 if game.key.code == KeyCode::Char && game.key.printable.is_alphabetic() {
                     let index = game.key.printable.to_ascii_lowercase() as usize - 'a' as usize;
-                    game.inventory_opened = false;
+                    let inventory_action = game.inventory_action.take();
                     if index < inventory.objects.len() {
-                        game.player_turn = Turn::Drop(index);
-                    } else {
-                        game.player_turn = Turn::Nothing;
+                        match inventory_action {
+                            Some(InventoryAction::Drop) =>  game.player_turn = Turn::Drop(index),
+                            Some(InventoryAction::Use) =>  game.player_turn = Turn::Use(index),
+                            None => unreachable!()
+                        }
                     }
-                } else {
-                    game.player_turn = Turn::Nothing;
                 }
             } else {
                 match game.key {
@@ -67,7 +67,15 @@ impl<'a> System<'a> for PlayerAction {
                         printable: 'd',
                         ..
                     } => {
-                        game.inventory_opened = true;
+                        game.inventory_action = Some(InventoryAction::Drop);
+                        game.player_turn = Turn::Nothing;
+                    }
+                    Key {
+                        code: KeyCode::Char,
+                        printable: 'i',
+                        ..
+                    } => {
+                        game.inventory_action = Some(InventoryAction::Use);
                         game.player_turn = Turn::Nothing;
                     }
                     _ => {

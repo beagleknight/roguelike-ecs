@@ -10,7 +10,7 @@ use crate::map::Map;
 
 const MAX_ITEMS: i32 = 3;
 
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum ItemKind {
     HealthPotion,
 }
@@ -62,7 +62,9 @@ impl Item {
                             character: '!',
                         })
                         .with(item.position.clone())
-                        .with(Pickable)
+                        .with(Pickable {
+                            kind: ItemKind::HealthPotion,
+                        })
                         .build();
                 }
             }

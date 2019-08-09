@@ -1,7 +1,7 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
 use crate::components::{Health, Inventory, Object, Pickable, Player, Position, Tile};
-use crate::game::Game;
+use crate::game::{Game, InventoryAction};
 use crate::map::{FovMap, TileVisibility};
 
 const INVENTORY_WIDTH: i32 = 50;
@@ -55,7 +55,7 @@ impl<'a> System<'a> for Render {
         game.render_log();
 
         for (inventory, _) in (&inventory, &player).join() {
-            if game.inventory_opened {
+            if game.inventory_action.is_some() {
                 let object_names: Vec<&String> = inventory
                     .objects
                     .iter()
@@ -64,11 +64,16 @@ impl<'a> System<'a> for Render {
                         &item_object.name
                     })
                     .collect();
-                game.show_inventory_menu(
-                    "Press the key next to an item to drop it, or any other to cancel.\n",
-                    &object_names,
-                    INVENTORY_WIDTH,
-                );
+                let header = match game.inventory_action {
+                    Some(InventoryAction::Drop) => {
+                        "Press the key next to an item to drop it, or any other to cancel.\n"
+                    }
+                    Some(InventoryAction::Use) => {
+                        "Press the key next to an item to use it, or any other to cancel.\n"
+                    }
+                    None => unreachable!(),
+                };
+                game.show_inventory_menu(header, &object_names, INVENTORY_WIDTH);
             }
         }
 

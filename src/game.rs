@@ -41,12 +41,18 @@ pub enum Turn {
     Move,
     PickUp,
     Drop(usize),
+    Use(usize),
+}
+
+pub enum InventoryAction {
+    Drop,
+    Use,
 }
 
 pub struct Game {
     pub player_turn: Turn,
     pub key: Key,
-    pub inventory_opened: bool,
+    pub inventory_action: Option<InventoryAction>,
     root: Root,
     log: Vec<(String, Color)>,
 }
@@ -63,7 +69,7 @@ impl Game {
         Game {
             player_turn: Turn::Nothing,
             key: Default::default(),
-            inventory_opened: false,
+            inventory_action: None,
             root,
             log: vec![(
                 String::from(
@@ -81,8 +87,8 @@ impl Game {
         Default::default()
     }
 
-    pub fn exit(key: Key) -> bool {
-        key.code == KeyCode::Escape
+    pub fn exit(&self, key: Key) -> bool {
+        key.code == KeyCode::Escape || self.root.window_closed()
     }
 
     pub fn render_health_bar(&mut self, value: i32, maximum: i32) {

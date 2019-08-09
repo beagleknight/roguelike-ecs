@@ -8,6 +8,7 @@ pub mod player_combat;
 pub mod player_drop;
 pub mod player_movement;
 pub mod player_pick_up;
+pub mod player_use;
 pub mod render;
 
 pub use ai_combat::AICombat;
@@ -20,4 +21,5 @@ pub use player_combat::PlayerCombat;
 pub use player_drop::PlayerDrop;
 pub use player_movement::PlayerMovement;
 pub use player_pick_up::PlayerPickUp;
+pub use player_use::PlayerUse;
 pub use render::Render;
