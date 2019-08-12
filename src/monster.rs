@@ -8,9 +8,7 @@ use tcod::colors::{DARKER_GREEN, DARKEST_GREEN, DESATURATED_GREEN};
 use crate::components::equipment::Slot;
 use crate::components::*;
 use crate::item::{Item, SlotKind};
-use crate::map::Map;
-
-const MAX_MONSTERS: i32 = 2;
+use crate::map::{Map, Transition};
 
 #[derive(Clone)]
 pub enum MonsterKind {
@@ -26,21 +24,57 @@ pub struct Monster {
 
 impl Monster {
     pub fn place_monsters(map: &mut Map) -> Vec<Monster> {
+        let max_monsters = Map::from_dungeon_level(
+            &[
+                Transition { level: 1, value: 2 },
+                Transition { level: 4, value: 3 },
+                Transition { level: 6, value: 5 },
+            ],
+            map.level,
+        );
         let mut monsters = vec![];
 
         for room in &map.rooms {
-            let num_monsters = rand::thread_rng().gen_range(0, MAX_MONSTERS + 1);
+            let num_monsters = rand::thread_rng().gen_range(0, max_monsters + 1);
             let monster_chances = &mut [
                 Weighted {
                     weight: 40,
                     item: MonsterKind::Orc,
                 },
                 Weighted {
-                    weight: 40,
+                    weight: Map::from_dungeon_level(
+                        &[
+                            Transition {
+                                level: 2,
+                                value: 10,
+                            },
+                            Transition {
+                                level: 3,
+                                value: 30,
+                            },
+                        ],
+                        map.level,
+                    ),
                     item: MonsterKind::OrcCaptain,
                 },
                 Weighted {
-                    weight: 10,
+                    weight: Map::from_dungeon_level(
+                        &[
+                            Transition {
+                                level: 3,
+                                value: 15,
+                            },
+                            Transition {
+                                level: 5,
+                                value: 30,
+                            },
+                            Transition {
+                                level: 7,
+                                value: 60,
+                            },
+                        ],
+                        map.level,
+                    ),
                     item: MonsterKind::Troll,
                 },
             ];
@@ -64,6 +98,8 @@ impl Monster {
     }
 
     pub fn build_entities(monsters: Vec<Monster>, world: &mut World) {
+        Monster::clean_entities(world);
+
         for monster in &monsters {
             match monster.kind {
                 MonsterKind::Orc => {
@@ -147,6 +183,15 @@ impl Monster {
                         .build();
                 }
             }
+        }
+    }
+
+    pub fn clean_entities(world: &mut World) {
+        let ai_controlled = world.read_storage::<AIControlled>();
+        let entities = world.entities();
+
+        for (entity, _) in (&entities, &ai_controlled).join() {
+            entities.delete(entity).unwrap();
         }
     }
 }

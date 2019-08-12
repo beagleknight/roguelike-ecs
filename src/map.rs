@@ -3,10 +3,11 @@ use specs::prelude::*;
 use std::cmp;
 use tcod::map::{FovAlgorithm, Map as Fov};
 
-use crate::components::{Block, Position, Tile};
+use crate::components::{Block, Object, Position, Stairs, Tile, Corpse};
+use crate::game::colors;
 
-const MAP_WIDTH: i32 = 80;
-const MAP_HEIGHT: i32 = 43;
+pub const MAP_WIDTH: i32 = 80;
+pub const MAP_HEIGHT: i32 = 43;
 
 const ROOM_MAX_SIZE: i32 = 10;
 const ROOM_MIN_SIZE: i32 = 6;
@@ -31,18 +32,20 @@ pub enum TileVisibility {
 }
 
 pub struct Map {
+    pub level: u32,
     pub width: i32,
     pub height: i32,
     pub tiles: Vec<Vec<TileKind>>,
     pub rooms: Vec<Room>,
     pub player_starting_position: Position,
+    pub stairs_position: Position,
     pub occupied_places: Vec<Position>,
     pub fov: Fov,
 }
 
 impl Map {
-    pub fn create() -> Map {
-        let mut map = Self::empty();
+    pub fn create(level: u32) -> Map {
+        let mut map = Self::empty(level);
 
         for _ in 0..MAX_ROOMS {
             let w = rand::thread_rng().gen_range(ROOM_MIN_SIZE, ROOM_MAX_SIZE + 1);
@@ -76,8 +79,16 @@ impl Map {
             }
         }
 
+        let (last_room_x, last_room_y) = map.rooms[map.rooms.len() - 1].center();
+        map.stairs_position = Position {
+            x: last_room_x,
+            y: last_room_y,
+        };
+
         map.occupied_places
             .push(map.player_starting_position.clone());
+
+        map.occupied_places.push(map.stairs_position.clone());
 
         for y in 0..MAP_HEIGHT {
             for x in 0..MAP_WIDTH {
@@ -99,13 +110,15 @@ impl Map {
             .any(|position| position.x == x && position.y == y)
     }
 
-    fn empty() -> Self {
+    fn empty(level: u32) -> Self {
         Map {
+            level,
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
             tiles: vec![vec![TileKind::Wall; MAP_HEIGHT as usize]; MAP_WIDTH as usize],
             rooms: vec![],
             player_starting_position: Position { x: 0, y: 0 },
+            stairs_position: Position { x: 0, y: 0 },
             occupied_places: vec![],
             fov: Fov::new(MAP_WIDTH, MAP_HEIGHT),
         }
@@ -132,6 +145,8 @@ impl Map {
     }
 
     pub fn build_entities(&self, world: &mut World) {
+        self.clean_entities(world);
+
         for y in 0..self.height {
             for x in 0..self.width {
                 match self.tiles[x as usize][y as usize] {
@@ -139,7 +154,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Tile {
-                                explored: false,
+                                explored: true,
                                 kind: TileKind::Wall,
                             })
                             .with(Position {
@@ -153,7 +168,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Tile {
-                                explored: false,
+                                explored: true,
                                 kind: TileKind::Floor,
                             })
                             .with(Position {
@@ -164,6 +179,39 @@ impl Map {
                     }
                 }
             }
+        }
+
+        world
+            .create_entity()
+            .with(Stairs {
+                from_level: self.level,
+                to_level: self.level + 1,
+            })
+            .with(Object {
+                name: String::from("stairs"),
+                color: colors::WHITE,
+                character: '>',
+            })
+            .with(self.stairs_position.clone())
+            .build();
+    }
+
+    pub fn clean_entities(&self, world: &mut World) {
+        let tiles = world.read_storage::<Tile>();
+        let stairs = world.read_storage::<Stairs>();
+        let corpses = world.read_storage::<Corpse>();
+        let entities = world.entities();
+
+        for (entity, _) in (&entities, &tiles).join() {
+            entities.delete(entity).unwrap();
+        }
+
+        for (entity, _) in (&entities, &stairs).join() {
+            entities.delete(entity).unwrap();
+        }
+
+        for (entity, _) in (&entities, &corpses).join() {
+            entities.delete(entity).unwrap();
         }
     }
 
@@ -190,6 +238,14 @@ impl Map {
         }
 
         fov_map
+    }
+
+    pub fn from_dungeon_level(table: &[Transition], level: u32) -> u32 {
+        table
+            .iter()
+            .rev()
+            .find(|transition| level >= transition.level)
+            .map_or(0, |transition| transition.value)
     }
 }
 
@@ -223,4 +279,9 @@ impl Room {
             && (self.y1 <= other.y2)
             && (self.y2 >= other.y1)
     }
+}
+
+pub struct Transition {
+    pub level: u32,
+    pub value: u32,
 }

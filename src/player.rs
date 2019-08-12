@@ -2,16 +2,13 @@ use specs::prelude::*;
 use tcod::colors::WHITE;
 
 use crate::components::equipment::Slot;
-use crate::components::{
-    Block, Equipment, Fighter, Health, Inventory, Object, Player as PlayerComponent, Velocity,
-};
+use crate::components::{*, Player as PlayerComponent};
 use crate::item::SlotKind;
-use crate::map::Map;
 
 pub struct Player;
 
 impl Player {
-    pub fn build_entity(world: &mut World, map: &Map) {
+    pub fn build_entity(world: &mut World) {
         world
             .create_entity()
             .with(PlayerComponent)
@@ -45,7 +42,7 @@ impl Player {
                     },
                 ],
             })
-            .with(map.player_starting_position.clone())
+            .with(Position { x: 0, y: 0 })
             .with(Velocity { x: 0, y: 0 })
             .with(Block)
             .build();

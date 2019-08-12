@@ -9,3 +9,12 @@ pub struct Health {
 impl Component for Health {
     type Storage = VecStorage<Self>;
 }
+
+impl Health {
+    pub fn heal(&mut self, amount: i32) {
+        self.hp += amount;
+        if self.hp > self.base_max_hp {
+            self.hp = self.base_max_hp;
+        }
+    }
+}

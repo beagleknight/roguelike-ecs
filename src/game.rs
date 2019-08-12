@@ -35,13 +35,14 @@ const COLOR_LIGHT_GROUND: Color = Color {
     b: 50,
 };
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum Turn {
     Nothing,
     Move,
     PickUp,
     Drop(usize),
     Use(usize),
+    Stairs(Option<u32>),
 }
 
 pub enum InventoryAction {
@@ -80,15 +81,16 @@ impl Game {
         }
     }
 
-    pub fn read_key() -> Key {
-        if let Some((_, Event::Key(k))) = input::check_for_event(input::KEY_PRESS) {
-            return k;
+    pub fn read_input(&mut self) {
+        self.key = if let Some((_, Event::Key(k))) = input::check_for_event(input::KEY_PRESS) {
+            k
+        } else {
+            Default::default()
         }
-        Default::default()
     }
 
-    pub fn exit(&self, key: Key) -> bool {
-        key.code == KeyCode::Escape || self.root.window_closed()
+    pub fn exit(&self) -> bool {
+        self.key.code == KeyCode::Escape || self.root.window_closed()
     }
 
     pub fn render_health_bar(&mut self, value: i32, maximum: i32) {

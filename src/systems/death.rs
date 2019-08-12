@@ -1,6 +1,6 @@
 use specs::{Entities, Join, ReadStorage, System, WriteExpect, WriteStorage};
 
-use crate::components::{Health, Object, Player, Position};
+use crate::components::{Health, Object, Player, Position, Corpse};
 use crate::game::{colors, Game};
 
 pub struct Death;
@@ -12,11 +12,12 @@ impl<'a> System<'a> for Death {
         ReadStorage<'a, Player>,
         WriteStorage<'a, Position>,
         WriteStorage<'a, Object>,
+        WriteStorage<'a, Corpse>,
     );
 
     fn run(
         &mut self,
-        (mut game, entities, health, player, mut positions, mut objects): Self::SystemData,
+        (mut game, entities, health, player, mut positions, mut objects, mut corpses): Self::SystemData,
     ) {
         let mut corpses_positions: Vec<Position> = vec![];
 
@@ -41,6 +42,7 @@ impl<'a> System<'a> for Death {
         for corpse_position in &corpses_positions {
             entities
                 .build_entity()
+                .with(Corpse, &mut corpses)
                 .with(
                     Object {
                         name: String::from("corpse"),

@@ -6,9 +6,7 @@ use specs::prelude::*;
 
 use crate::components::{Equipable, Object, Pickable, Position, Usable};
 use crate::game::colors;
-use crate::map::Map;
-
-const MAX_ITEMS: i32 = 3;
+use crate::map::{Map, Transition};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum ItemKind {
@@ -42,26 +40,48 @@ pub struct Item {
 
 impl Item {
     pub fn place_items(map: &mut Map) -> Vec<Item> {
+        let max_items = Map::from_dungeon_level(
+            &[
+                Transition { level: 1, value: 1 },
+                Transition { level: 4, value: 2 },
+            ],
+            map.level,
+        );
         let mut items = vec![];
 
         for room in &map.rooms {
-            let num_items = rand::thread_rng().gen_range(0, MAX_ITEMS + 1);
+            let num_items = rand::thread_rng().gen_range(0, max_items + 1);
             let item_chances = &mut [
                 Weighted {
-                    weight: 60,
+                    weight: 35,
                     item: ItemKind::HealthPotion,
                 },
                 Weighted {
-                    weight: 20,
+                    weight: Map::from_dungeon_level(
+                        &[Transition {
+                            level: 2,
+                            value: 10,
+                        }],
+                        map.level,
+                    ),
                     item: ItemKind::Dagger,
                 },
                 Weighted {
-                    weight: 10,
-                    item: ItemKind::Sword,
+                    weight: Map::from_dungeon_level(
+                        &[Transition {
+                            level: 3,
+                            value: 10,
+                        }],
+                        map.level,
+                    ),
+                    item: ItemKind::Helmet,
                 },
                 Weighted {
-                    weight: 10,
-                    item: ItemKind::Helmet,
+                    weight: Map::from_dungeon_level(
+                        &[Transition { level: 4, value: 5 }],
+                        map.level,
+                    ),
+                    item: ItemKind::Sword,
                 },
             ];
             let item_choice = WeightedChoice::new(item_chances);
@@ -84,6 +104,8 @@ impl Item {
     }
 
     pub fn build_entities(items: Vec<Item>, world: &mut World) {
+        Item::clean_entities(world);
+
         for item in &items {
             match item.kind {
                 ItemKind::HealthPotion => {
@@ -126,6 +148,16 @@ impl Item {
                     Item::create_helmet_entity(world, Some(item.position.clone()));
                 }
             }
+        }
+    }
+
+    pub fn clean_entities(world: &mut World) {
+        let pickables = world.read_storage::<Pickable>();
+        let positions = world.read_storage::<Position>();
+        let entities = world.entities();
+
+        for (entity, _, _) in (&entities, &pickables, &positions).join() {
+            entities.delete(entity).unwrap();
         }
     }
 

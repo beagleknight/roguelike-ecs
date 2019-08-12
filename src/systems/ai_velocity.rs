@@ -21,7 +21,7 @@ impl<'a> System<'a> for AIVelocity {
         (game, fov_map, mut velocity, ai_controlled, position, player, block): Self::SystemData,
     ) {
         match game.player_turn {
-            Turn::Nothing => {
+            Turn::Nothing | Turn::Stairs(_) => {
                 for (velocity, _, _) in (&mut velocity, &position, &ai_controlled).join() {
                     *velocity = Velocity { x: 0, y: 0 };
                 }

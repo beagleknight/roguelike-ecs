@@ -37,9 +37,12 @@ impl<'a> System<'a> for PlayerPickUp {
 
                         let inventory = inventories.get_mut(player_entity).unwrap();
                         inventory.objects.push(entity);
+                        return;
                     }
                 }
             }
+
+            game.player_turn = Turn::Nothing;
         }
     }
 }

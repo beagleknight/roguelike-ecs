@@ -1,8 +1,6 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
-use crate::components::{
-    Equipable, Equipment, Health, Inventory, Object, Pickable, Player, Position, Tile,
-};
+use crate::components::*;
 use crate::game::{Game, InventoryAction};
 use crate::map::{FovMap, TileVisibility};
 
@@ -22,6 +20,7 @@ impl<'a> System<'a> for Render {
         ReadStorage<'a, Inventory>,
         ReadStorage<'a, Equipable>,
         ReadStorage<'a, Equipment>,
+        ReadStorage<'a, Corpse>,
     );
 
     fn run(
@@ -38,6 +37,7 @@ impl<'a> System<'a> for Render {
             inventory,
             equipables,
             equipment,
+            corpses
         ): Self::SystemData,
     ) {
         game.clear_window();
@@ -48,7 +48,13 @@ impl<'a> System<'a> for Render {
             game.render_tile(tile, position, is_in_fov);
         }
 
-        for (object, position, _, _) in (&objects, &position, !&player, &pickable).join() {
+        for (object, position, _) in (&objects, &position, &corpses).join() {
+            let is_in_fov =
+                fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
+            game.render_object(object, position, is_in_fov);
+        }
+
+        for (object, position, _) in (&objects, &position, &pickable).join() {
             let is_in_fov =
                 fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
             game.render_object(object, position, is_in_fov);

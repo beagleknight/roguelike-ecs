@@ -13,6 +13,8 @@ impl<'a> System<'a> for PlayerAction {
     );
 
     fn run(&mut self, (mut game, mut velocity, inventory, player): Self::SystemData) {
+        game.player_turn = Turn::Nothing;
+
         for (velocity, inventory, _) in (&mut velocity, &inventory, &player).join() {
             if game.inventory_action.is_some() {
                 if game.key.code == KeyCode::Char && game.key.printable.is_alphabetic() {
@@ -77,6 +79,13 @@ impl<'a> System<'a> for PlayerAction {
                     } => {
                         game.inventory_action = Some(InventoryAction::Use);
                         game.player_turn = Turn::Nothing;
+                    }
+                    Key {
+                        code: KeyCode::Char,
+                        printable: 's',
+                        ..
+                    } => {
+                        game.player_turn = Turn::Stairs(None);
                     }
                     _ => {
                         *velocity = Velocity { x: 0, y: 0 };

@@ -45,10 +45,7 @@ impl<'a> System<'a> for PlayerUse {
                     match item_usable.kind {
                         ItemKind::HealthPotion => {
                             game.log("Your wounds start to feel better!", colors::LIGHT_VIOLET);
-                            health.hp += HEAL_AMOUNT;
-                            if health.hp > health.base_max_hp {
-                                health.hp = health.base_max_hp;
-                            }
+                            health.heal(HEAL_AMOUNT);
                         }
                         _ => unreachable!(),
                     }
