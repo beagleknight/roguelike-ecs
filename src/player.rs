@@ -31,7 +31,7 @@ impl Player {
             .with(Experience {
                 level: 1,
                 points: 0,
-                next_level_points: Some(LEVEL_UP_BASE + LEVEL_UP_FACTOR),
+                next_level_points: LEVEL_UP_BASE + LEVEL_UP_FACTOR,
             })
             .with(Inventory { objects: vec![] })
             .with(Equipment {

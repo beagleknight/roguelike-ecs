@@ -23,6 +23,7 @@ impl<'a> System<'a> for Render {
         ReadStorage<'a, Equipment>,
         ReadStorage<'a, Corpse>,
         ReadStorage<'a, Fighter>,
+        ReadStorage<'a, Experience>,
     );
 
     fn run(
@@ -42,6 +43,7 @@ impl<'a> System<'a> for Render {
             equipment,
             corpses,
             fighter,
+            experience,
         ): Self::SystemData,
     ) {
         game.clear_window();
@@ -70,19 +72,25 @@ impl<'a> System<'a> for Render {
             game.render_object(object, position, is_in_fov);
         }
 
-        for (object, position, health, _) in (&objects, &position, &health, &player).join() {
+        for (object, position, health, experience, _) in
+            (&objects, &position, &health, &experience, &player).join()
+        {
             let is_in_fov =
                 fov_map[position.x as usize][position.y as usize] == TileVisibility::Visible;
 
             game.render_object(object, position, is_in_fov);
+            game.render_player_level(experience.level);
             game.render_health_bar(health.hp, health.base_max_hp);
+            game.render_experience_bar(experience.points as i32, experience.next_level_points as i32);
         }
 
         let DungeonLevel(level) = *dungeon_level;
         game.render_dungeon_level(level);
         game.render_log();
 
-        for (health, fighter, inventory, equipment, _) in (&health, &fighter, &inventory, &equipment, &player).join() {
+        for (health, fighter, inventory, equipment, _) in
+            (&health, &fighter, &inventory, &equipment, &player).join()
+        {
             if game.menu.is_some() {
                 let header = match game.menu {
                     Some(Menu::DropItem) => {

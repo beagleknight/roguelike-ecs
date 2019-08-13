@@ -47,7 +47,8 @@ impl<'a> System<'a> for Death {
                 game.log(
                     format!(
                         "{} is dead! You gain {} experience points.",
-                        object.name, experience.points
+                        object.name,
+                        experience.level * experience.points
                     ),
                     colors::ORANGE,
                 );

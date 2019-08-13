@@ -48,7 +48,7 @@ pub enum Turn {
 pub enum Menu {
     DropItem,
     UseItem,
-    LevelUp
+    LevelUp,
 }
 
 pub struct Game {
@@ -95,23 +95,53 @@ impl Game {
     }
 
     pub fn render_health_bar(&mut self, value: i32, maximum: i32) {
+        self.render_bar(
+            "HP",
+            PANEL_Y + 1,
+            value,
+            maximum,
+            colors::DARKER_RED,
+            colors::LIGHT_RED,
+        );
+    }
+
+    pub fn render_experience_bar(&mut self, value: i32, maximum: i32) {
+        self.render_bar(
+            "XP",
+            PANEL_Y + 2,
+            value,
+            maximum,
+            colors::DARKER_BLUE,
+            colors::LIGHT_BLUE,
+        );
+    }
+
+    fn render_bar(
+        &mut self,
+        label: &str,
+        pos_y: i32,
+        value: i32,
+        maximum: i32,
+        background_color: Color,
+        foreground_color: Color,
+    ) {
         let bar_width = (value as f32 / maximum as f32 * BAR_WIDTH as f32) as i32;
-        self.root.set_default_background(colors::DARKER_RED);
+        self.root.set_default_background(background_color);
         self.root
-            .rect(1, PANEL_Y + 1, BAR_WIDTH, 1, false, BackgroundFlag::Screen);
-        self.root.set_default_background(colors::LIGHT_RED);
+            .rect(1, pos_y, BAR_WIDTH, 1, false, BackgroundFlag::Screen);
+        self.root.set_default_background(foreground_color);
         if bar_width > 0 {
             self.root
-                .rect(1, PANEL_Y + 1, bar_width, 1, false, BackgroundFlag::Screen);
+                .rect(1, pos_y, bar_width, 1, false, BackgroundFlag::Screen);
         }
         self.root.set_default_background(colors::BLACK);
         self.root.set_default_foreground(colors::WHITE);
         self.root.print_ex(
             1 + BAR_WIDTH / 2,
-            PANEL_Y + 1,
+            pos_y,
             BackgroundFlag::None,
             TextAlignment::Center,
-            &format!("{}: {}/{}", "HP", value, maximum),
+            &format!("{}: {}/{}", label, value, maximum),
         )
     }
 
@@ -123,6 +153,17 @@ impl Game {
             BackgroundFlag::None,
             TextAlignment::Left,
             format!("Dungeon level: {}", dungeon_level),
+        );
+    }
+
+    pub fn render_player_level(&mut self, player_level: u32) {
+        self.root.set_default_foreground(colors::WHITE);
+        self.root.print_ex(
+            1,
+            PANEL_Y + 4,
+            BackgroundFlag::None,
+            TextAlignment::Left,
+            format!("Player level: {}", player_level),
         );
     }
 

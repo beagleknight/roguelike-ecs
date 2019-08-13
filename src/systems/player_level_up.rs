@@ -13,10 +13,9 @@ impl<'a> System<'a> for PlayerLevelUp {
         let (mut game, mut experiences, players) = data;
 
         for (experience, _) in (&mut experiences, &players).join() {
-            if let Some(next_level_points) = experience.next_level_points {
-                if experience.points >= next_level_points {
+                if experience.points >= experience.next_level_points {
                     experience.level += 1;
-                    experience.next_level_points = Some(LEVEL_UP_BASE + experience.level * LEVEL_UP_FACTOR);
+                    experience.next_level_points = LEVEL_UP_BASE + experience.level * LEVEL_UP_FACTOR;
                     experience.points = 0;
                     game.log(
                         format!(
@@ -27,7 +26,6 @@ impl<'a> System<'a> for PlayerLevelUp {
                     );
                     game.menu = Some(Menu::LevelUp);
                 }
-            }
         }
     }
 }

@@ -122,7 +122,7 @@ impl Monster {
                         .with(Experience {
                             level: 1,
                             points: 35,
-                            next_level_points: None,
+                            next_level_points: 0,
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
@@ -151,7 +151,7 @@ impl Monster {
                         .with(Experience {
                             level: 2,
                             points: 35,
-                            next_level_points: None,
+                            next_level_points: 0,
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
@@ -190,7 +190,7 @@ impl Monster {
                         .with(Experience {
                             level: 1,
                             points: 100,
-                            next_level_points: None,
+                            next_level_points: 0,
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
