@@ -5,6 +5,9 @@ use crate::components::equipment::Slot;
 use crate::components::{*, Player as PlayerComponent};
 use crate::item::SlotKind;
 
+pub const LEVEL_UP_BASE: u32 = 200;
+pub const LEVEL_UP_FACTOR: u32 = 150;
+
 pub struct Player;
 
 impl Player {
@@ -24,6 +27,11 @@ impl Player {
             .with(Fighter {
                 base_defense: 1,
                 base_power: 4,
+            })
+            .with(Experience {
+                level: 1,
+                points: 0,
+                next_level_points: Some(LEVEL_UP_BASE + LEVEL_UP_FACTOR)
             })
             .with(Inventory { objects: vec![] })
             .with(Equipment {

@@ -34,6 +34,7 @@ fn main() {
         .with(AICombat, "ai_combat", &["ai_velocity"])
         .with(AIMovement, "ai_movement", &["ai_combat"])
         .with(Death, "death", &["ai_movement"])
+        .with(PlayerLevelUp, "player_level_up", &["death"])
         .with_thread_local(Render)
         .build();
 

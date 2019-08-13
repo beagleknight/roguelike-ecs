@@ -119,6 +119,11 @@ impl Monster {
                             base_defense: 0,
                             base_power: 4,
                         })
+                        .with(Experience {
+                            level: 1,
+                            points: 35,
+                            next_level_points: None,
+                        })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
                         .with(Block)
@@ -142,6 +147,11 @@ impl Monster {
                         .with(Fighter {
                             base_defense: 0,
                             base_power: 4,
+                        })
+                        .with(Experience {
+                            level: 2,
+                            points: 35,
+                            next_level_points: None,
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })
@@ -176,6 +186,11 @@ impl Monster {
                         .with(Fighter {
                             base_defense: 2,
                             base_power: 8,
+                        })
+                        .with(Experience {
+                            level: 1,
+                            points: 100,
+                            next_level_points: None,
                         })
                         .with(monster.position.clone())
                         .with(Velocity { x: 0, y: 0 })

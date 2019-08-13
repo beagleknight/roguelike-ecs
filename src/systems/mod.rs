@@ -11,6 +11,7 @@ pub mod player_pick_up;
 pub mod player_stairs;
 pub mod player_use;
 pub mod render;
+pub mod player_level_up;
 
 pub use ai_combat::AICombat;
 pub use ai_movement::AIMovement;
@@ -25,3 +26,4 @@ pub use player_pick_up::PlayerPickUp;
 pub use player_stairs::PlayerStairs;
 pub use player_use::PlayerUse;
 pub use render::Render;
+pub use player_level_up::PlayerLevelUp;

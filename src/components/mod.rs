@@ -14,6 +14,7 @@ pub mod tile;
 pub mod usable;
 pub mod velocity;
 pub mod corpse;
+pub mod experience;
 
 pub use ai_controlled::AIControlled;
 pub use block::Block;
@@ -31,3 +32,4 @@ pub use tile::Tile;
 pub use usable::Usable;
 pub use velocity::Velocity;
 pub use corpse::Corpse;
+pub use experience::Experience;
