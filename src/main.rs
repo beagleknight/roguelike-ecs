@@ -11,12 +11,13 @@ use specs::prelude::*;
 use crate::components::{Player as PlayerComponent, Position};
 use crate::game::{Game, Turn};
 use crate::item::Item;
-use crate::map::{FovMap, Map, TileVisibility, MAP_HEIGHT, MAP_WIDTH};
+use crate::map::{DungeonLevel, FovMap, Map, TileVisibility, MAP_HEIGHT, MAP_WIDTH};
 use crate::monster::Monster;
 use crate::player::Player;
 use crate::systems::*;
 
 fn main() {
+    let dungeon_level = DungeonLevel(1);
     let game = Game::create();
     let fov_map = vec![vec![TileVisibility::NotVisible; MAP_HEIGHT as usize]; MAP_WIDTH as usize];
     let mut world = World::new();
@@ -40,10 +41,12 @@ fn main() {
 
     create_player(&mut world);
 
-    let mut map = create_map(1, &mut world);
+    let DungeonLevel(level) = dungeon_level;
+    let mut map = create_map(level, &mut world);
 
     world.insert(game);
     world.insert(fov_map);
+    world.insert(dungeon_level);
 
     loop {
         dispatcher.dispatch(&mut world);
@@ -55,6 +58,9 @@ fn main() {
         };
 
         if let Turn::Stairs(Some(level)) = player_turn {
+            let mut dungeon_level = world.write_resource::<DungeonLevel>();
+            *dungeon_level = DungeonLevel(level);
+            drop(dungeon_level);
             map = create_map(level, &mut world);
         }
 

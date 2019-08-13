@@ -114,6 +114,17 @@ impl Game {
         )
     }
 
+    pub fn render_dungeon_level(&mut self, dungeon_level: u32) {
+        self.root.set_default_foreground(colors::WHITE);
+        self.root.print_ex(
+            1,
+            PANEL_Y + 3,
+            BackgroundFlag::None,
+            TextAlignment::Left,
+            format!("Dungeon level: {}", dungeon_level),
+        );
+    }
+
     pub fn render_log(&mut self) {
         let mut y = MSG_HEIGHT as i32;
         for &(ref msg, color) in self.log.iter().rev() {

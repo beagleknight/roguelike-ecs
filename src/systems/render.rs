@@ -2,7 +2,7 @@ use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
 use crate::components::*;
 use crate::game::{Game, InventoryAction};
-use crate::map::{FovMap, TileVisibility};
+use crate::map::{FovMap, TileVisibility, DungeonLevel};
 
 const INVENTORY_WIDTH: i32 = 50;
 
@@ -11,6 +11,7 @@ impl<'a> System<'a> for Render {
     type SystemData = (
         WriteExpect<'a, Game>,
         ReadExpect<'a, FovMap>,
+        ReadExpect<'a, DungeonLevel>,
         ReadStorage<'a, Object>,
         ReadStorage<'a, Tile>,
         ReadStorage<'a, Position>,
@@ -28,6 +29,7 @@ impl<'a> System<'a> for Render {
         (
             mut game,
             fov_map,
+            dungeon_level,
             objects,
             tile,
             position,
@@ -37,7 +39,7 @@ impl<'a> System<'a> for Render {
             inventory,
             equipables,
             equipment,
-            corpses
+            corpses,
         ): Self::SystemData,
     ) {
         game.clear_window();
@@ -74,6 +76,8 @@ impl<'a> System<'a> for Render {
             game.render_health_bar(health.hp, health.base_max_hp);
         }
 
+        let DungeonLevel(level) = *dungeon_level;
+        game.render_dungeon_level(level);
         game.render_log();
 
         for (inventory, equipment, _) in (&inventory, &equipment, &player).join() {

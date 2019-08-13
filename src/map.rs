@@ -3,7 +3,7 @@ use specs::prelude::*;
 use std::cmp;
 use tcod::map::{FovAlgorithm, Map as Fov};
 
-use crate::components::{Block, Object, Position, Stairs, Tile, Corpse};
+use crate::components::{Block, Corpse, Object, Position, Stairs, Tile};
 use crate::game::colors;
 
 pub const MAP_WIDTH: i32 = 80;
@@ -18,6 +18,7 @@ const FOV_LIGHT_WALLS: bool = true;
 const TORCH_RADIUS: i32 = 10;
 
 pub type FovMap = Vec<Vec<TileVisibility>>;
+pub struct DungeonLevel(pub u32);
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum TileKind {
@@ -154,7 +155,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Tile {
-                                explored: true,
+                                explored: false,
                                 kind: TileKind::Wall,
                             })
                             .with(Position {
@@ -168,7 +169,7 @@ impl Map {
                         world
                             .create_entity()
                             .with(Tile {
-                                explored: true,
+                                explored: false,
                                 kind: TileKind::Floor,
                             })
                             .with(Position {
