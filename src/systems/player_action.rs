@@ -1,31 +1,51 @@
 use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
 
-use crate::components::{Inventory, Player, Velocity};
-use crate::game::{Game, InventoryAction, Key, KeyCode, Turn};
+use crate::components::*;
+use crate::game::{Game, Key, KeyCode, Menu, Turn};
 
 pub struct PlayerAction;
 impl<'a> System<'a> for PlayerAction {
     type SystemData = (
         WriteExpect<'a, Game>,
         WriteStorage<'a, Velocity>,
+        WriteStorage<'a, Fighter>,
+        WriteStorage<'a, Health>,
         ReadStorage<'a, Inventory>,
         ReadStorage<'a, Player>,
     );
 
-    fn run(&mut self, (mut game, mut velocity, inventory, player): Self::SystemData) {
+    fn run(&mut self, (mut game, mut velocity, mut fighter, mut health, inventory, player): Self::SystemData) {
         game.player_turn = Turn::Nothing;
 
-        for (velocity, inventory, _) in (&mut velocity, &inventory, &player).join() {
-            if game.inventory_action.is_some() {
+        for (velocity, inventory, fighter, health, _) in (&mut velocity, &inventory, &mut fighter, &mut health, &player).join() {
+            *velocity = Velocity { x: 0, y: 0 };
+
+            if game.menu.is_some() {
                 if game.key.code == KeyCode::Char && game.key.printable.is_alphabetic() {
                     let index = game.key.printable.to_ascii_lowercase() as usize - 'a' as usize;
-                    let inventory_action = game.inventory_action.take();
-                    if index < inventory.objects.len() {
-                        match inventory_action {
-                            Some(InventoryAction::Drop) => game.player_turn = Turn::Drop(index),
-                            Some(InventoryAction::Use) => game.player_turn = Turn::Use(index),
-                            None => unreachable!(),
+                    let menu = game.menu.take();
+
+                    match menu {
+                        Some(Menu::DropItem) if index < inventory.objects.len() => {
+                            game.player_turn = Turn::Drop(index);
                         }
+                        Some(Menu::UseItem) if index < inventory.objects.len() => {
+                            game.player_turn = Turn::Use(index);
+                        }
+                        Some(Menu::LevelUp) => match index {
+                            0 => {
+                                health.base_max_hp += 20;
+                                health.hp += 20;
+                            }
+                            1 => {
+                                fighter.base_power += 1;
+                            }
+                            2 => {
+                                fighter.base_defense += 1;
+                            }
+                            _ => game.menu = Some(Menu::LevelUp),
+                        },
+                        _ => {}
                     }
                 }
             } else {
@@ -69,16 +89,14 @@ impl<'a> System<'a> for PlayerAction {
                         printable: 'd',
                         ..
                     } => {
-                        game.inventory_action = Some(InventoryAction::Drop);
-                        game.player_turn = Turn::Nothing;
+                        game.menu = Some(Menu::DropItem);
                     }
                     Key {
                         code: KeyCode::Char,
                         printable: 'i',
                         ..
                     } => {
-                        game.inventory_action = Some(InventoryAction::Use);
-                        game.player_turn = Turn::Nothing;
+                        game.menu = Some(Menu::UseItem);
                     }
                     Key {
                         code: KeyCode::Char,
@@ -87,10 +105,7 @@ impl<'a> System<'a> for PlayerAction {
                     } => {
                         game.player_turn = Turn::Stairs(None);
                     }
-                    _ => {
-                        *velocity = Velocity { x: 0, y: 0 };
-                        game.player_turn = Turn::Nothing;
-                    }
+                    _ => {}
                 }
             }
         }

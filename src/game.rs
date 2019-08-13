@@ -45,15 +45,16 @@ pub enum Turn {
     Stairs(Option<u32>),
 }
 
-pub enum InventoryAction {
-    Drop,
-    Use,
+pub enum Menu {
+    DropItem,
+    UseItem,
+    LevelUp
 }
 
 pub struct Game {
     pub player_turn: Turn,
     pub key: Key,
-    pub inventory_action: Option<InventoryAction>,
+    pub menu: Option<Menu>,
     root: Root,
     log: Vec<(String, Color)>,
 }
@@ -70,7 +71,7 @@ impl Game {
         Game {
             player_turn: Turn::Nothing,
             key: Default::default(),
-            inventory_action: None,
+            menu: None,
             root,
             log: vec![(
                 String::from(
@@ -89,8 +90,8 @@ impl Game {
         }
     }
 
-    pub fn exit(&self) -> bool {
-        self.key.code == KeyCode::Escape || self.root.window_closed()
+    pub fn window_closed(&self) -> bool {
+        self.root.window_closed()
     }
 
     pub fn render_health_bar(&mut self, value: i32, maximum: i32) {
@@ -180,7 +181,7 @@ impl Game {
         self.root.flush();
     }
 
-    pub fn show_inventory_menu<T: AsRef<str>>(&mut self, header: &str, options: &[T], width: i32) {
+    pub fn render_menu<T: AsRef<str>>(&mut self, header: &str, options: &[T], width: i32) {
         assert!(
             options.len() <= 26,
             "Cannot have a menu with more than 26 options."

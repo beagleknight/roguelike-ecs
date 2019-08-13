@@ -1,8 +1,8 @@
 use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 
 use crate::components::*;
-use crate::game::{Game, InventoryAction};
-use crate::map::{FovMap, TileVisibility, DungeonLevel};
+use crate::game::{Game, Menu};
+use crate::map::{DungeonLevel, FovMap, TileVisibility};
 
 const INVENTORY_WIDTH: i32 = 50;
 
@@ -22,6 +22,7 @@ impl<'a> System<'a> for Render {
         ReadStorage<'a, Equipable>,
         ReadStorage<'a, Equipment>,
         ReadStorage<'a, Corpse>,
+        ReadStorage<'a, Fighter>,
     );
 
     fn run(
@@ -40,6 +41,7 @@ impl<'a> System<'a> for Render {
             equipables,
             equipment,
             corpses,
+            fighter,
         ): Self::SystemData,
     ) {
         game.clear_window();
@@ -80,36 +82,45 @@ impl<'a> System<'a> for Render {
         game.render_dungeon_level(level);
         game.render_log();
 
-        for (inventory, equipment, _) in (&inventory, &equipment, &player).join() {
-            if game.inventory_action.is_some() {
-                let object_names: Vec<String> = inventory
-                    .objects
-                    .iter()
-                    .map(|&item_entity| {
-                        let item_object = objects.get(item_entity).unwrap();
-                        let item_equipable = equipables.get(item_entity);
-
-                        if let Some(item_equipable) = item_equipable {
-                            if equipment.has_equiped(item_entity, item_equipable) {
-                                return format!(
-                                    "{} (on {})",
-                                    item_object.name, item_equipable.slot
-                                );
-                            }
-                        }
-                        item_object.name.clone()
-                    })
-                    .collect();
-                let header = match game.inventory_action {
-                    Some(InventoryAction::Drop) => {
+        for (health, fighter, inventory, equipment, _) in (&health, &fighter, &inventory, &equipment, &player).join() {
+            if game.menu.is_some() {
+                let header = match game.menu {
+                    Some(Menu::DropItem) => {
                         "Press the key next to an item to drop it, or any other to cancel.\n"
                     }
-                    Some(InventoryAction::Use) => {
+                    Some(Menu::UseItem) => {
                         "Press the key next to an item to use it, or any other to cancel.\n"
                     }
+                    Some(Menu::LevelUp) => "Level up! Choose a stat to raise:\n",
                     None => unreachable!(),
                 };
-                game.show_inventory_menu(header, &object_names, INVENTORY_WIDTH);
+                let options: Vec<String> = match game.menu {
+                    Some(Menu::DropItem) | Some(Menu::UseItem) => inventory
+                        .objects
+                        .iter()
+                        .map(|&item_entity| {
+                            let item_object = objects.get(item_entity).unwrap();
+                            let item_equipable = equipables.get(item_entity);
+
+                            if let Some(item_equipable) = item_equipable {
+                                if equipment.has_equiped(item_entity, item_equipable) {
+                                    return format!(
+                                        "{} (on {})",
+                                        item_object.name, item_equipable.slot
+                                    );
+                                }
+                            }
+                            item_object.name.clone()
+                        })
+                        .collect(),
+                    Some(Menu::LevelUp) => vec![
+                        format!("Constitution (+20 HP, from {})", health.base_max_hp),
+                        format!("Strength (+1 attack, from {})", fighter.base_power),
+                        format!("Agility (+1 defense, from {})", fighter.base_defense),
+                    ],
+                    None => unreachable!(),
+                };
+                game.render_menu(header, &options, INVENTORY_WIDTH);
             }
         }
 

@@ -9,7 +9,7 @@ mod systems;
 use specs::prelude::*;
 
 use crate::components::{Player as PlayerComponent, Position};
-use crate::game::{Game, Turn};
+use crate::game::{Game, KeyCode, Turn};
 use crate::item::Item;
 use crate::map::{DungeonLevel, FovMap, Map, TileVisibility, MAP_HEIGHT, MAP_WIDTH};
 use crate::monster::Monster;
@@ -69,7 +69,7 @@ fn main() {
 
         let mut game = world.write_resource::<Game>();
         game.read_input();
-        if game.exit() {
+        if game.menu.is_none() && game.key.code == KeyCode::Escape || game.window_closed() {
             break;
         }
     }

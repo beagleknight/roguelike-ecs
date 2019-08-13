@@ -2,7 +2,7 @@ use specs::prelude::*;
 use tcod::colors::WHITE;
 
 use crate::components::equipment::Slot;
-use crate::components::{*, Player as PlayerComponent};
+use crate::components::{Player as PlayerComponent, *};
 use crate::item::SlotKind;
 
 pub const LEVEL_UP_BASE: u32 = 200;
@@ -31,7 +31,7 @@ impl Player {
             .with(Experience {
                 level: 1,
                 points: 0,
-                next_level_points: Some(LEVEL_UP_BASE + LEVEL_UP_FACTOR)
+                next_level_points: Some(LEVEL_UP_BASE + LEVEL_UP_FACTOR),
             })
             .with(Inventory { objects: vec![] })
             .with(Equipment {

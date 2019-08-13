@@ -1,7 +1,7 @@
 use specs::{Join, WriteExpect, ReadStorage, System, WriteStorage};
 
 use crate::components::*;
-use crate::game::{Game, colors};
+use crate::game::{Menu, Game, colors};
 use crate::player::{LEVEL_UP_BASE, LEVEL_UP_FACTOR};
 
 pub struct PlayerLevelUp;
@@ -25,6 +25,7 @@ impl<'a> System<'a> for PlayerLevelUp {
                         ),
                         colors::YELLOW,
                     );
+                    game.menu = Some(Menu::LevelUp);
                 }
             }
         }
