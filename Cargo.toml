@@ -7,6 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tcod = { version = "0.15", features = ["serialization"] }
-specs = "0.15.0"
+# tcod = { version = "0.15", features = ["serialization"] }
+tcod = { git = "https://github.com/tomassedovic/tcod-rs.git" }
+specs = "0.18.0"
 rand = "0.3.9"
